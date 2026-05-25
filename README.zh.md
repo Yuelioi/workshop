@@ -119,22 +119,15 @@ cd workshop
 
 ### Day 1 —— 给新项目开张
 
-```bash
-cd 你的项目
-git clone https://github.com/Yuelioi/workshop /tmp/workshop && \
-  /tmp/workshop/install.sh --scaffold=minimal
-# 或者手动 copy 本仓库的 scaffolds/minimal/workshop/
+Claude Code 里，`cd` 进你的项目，输入：
+
+```text
+/workshop:workshop-workflow
 ```
 
-编辑 `workshop/board.md`：
+Skill 检测到没 `workshop/`，问你要不要建，然后简短问两句（Active focus、Next session 第一条），生成 `workshop/board.md`。下次会话开始 SessionStart hook 自动加载，不用再敲 slash。
 
-```markdown
-**Active focus**: 实现 X 功能
-## Next session
-1. 在 src/models/X.ts 里搭数据模型
-```
-
-在项目里打开 AI 工具，skill 自动加载。
+**其他工具 / 脚本化安装**：clone 本仓库跑 `install.sh --scaffold=minimal`，或者手动 copy `scaffolds/minimal/workshop/` 到你的项目。
 
 ### 每次会话开始时 AI 干嘛
 
@@ -144,32 +137,17 @@ git clone https://github.com/Yuelioi/workshop /tmp/workshop && \
 3. 执行 "Next session" 第一条；状态不一致就先问你
 ```
 
-### 强制调用（Claude Code）
+### Slash 命令
 
-项目还没 `workshop/`，或 skill 没自动触发：
+| 命令 | 自动加载？ | 干啥的 |
+| --- | --- | --- |
+| `/workshop:workshop-workflow` | 是 —— `workshop/` 存在时由 SessionStart hook 自动注入 | 强制加载主协议。**也负责 bootstrap**：项目还没 `workshop/` 时，问你要不要建，然后引导填 `board.md`。之后跑 entry checklist。 |
+| `/workshop:session-enter` | 否 —— 仅显式 | 长 session 偏题后重新锚回：重读 `board.md`，跟 git status / branch / stash / 提交时间线对账，上浮过期 `wip/`。 |
+| `/workshop:session-exit` | 否 —— 仅显式 | Session 收尾：用 (a)–(h) 启发式分类新知识，更新 board，跑生命周期迁移，scar→playbook 晋升门触发时提示，按需 commit。 |
+| `/workshop:emit-agents-md` | 否 —— 仅显式 | 从 `workshop/board.md` 重生 repo 根的 `AGENTS.md`（对接消费 AGENTS.md 的工具：Codex CLI、Copilot、Cursor、Windsurf、Continue、Cody）。`board.md` 改动后跑。 |
+| `/workshop:doctor` | 否 —— 仅显式 | 全仓 8 类协议漂移审计（frontmatter 缺失、stale wip、断链、board ↔ folder 不一致、stale Blockers、Recently finished 超长、AGENTS.md 漂移、孤儿 scar）。报告 CRITICAL / WARNING / INFO，**不自动修**。 |
 
-```text
-/workshop:workshop-workflow
-```
-
-这会强制加载 skill 并跑 entry checklist。
-
-### 显式 slash 命令（v0.5.0+）
-
-两个聚焦的一键触发，session 中途重新对齐用:
-
-```text
-/workshop:session-enter   # 显式跑 entry checklist (重读 board, reconcile)
-/workshop:session-exit    # 显式跑 exit ritual (分类知识, 更新 board, commit)
-```
-
-两个都设了 `disable-model-invocation: true` — 只在用户显式打 slash 才触发, 不会自动 invoke. 适用:
-
-- 长 session 偏题了, 想重新锚回 board (`session-enter`)
-- 准备收尾, 强制 checklist (没 junk wip / hanging critique) (`session-exit`)
-- ship 完想暂停沉淀再继续 (`session-exit`)
-
-是 `workshop-workflow` entry / exit 段的薄壳 — 同规则更快触发.
+除 `workshop-workflow` 外，所有命令都带 `disable-model-invocation: true` —— 只在用户显式打 slash 时触发，不会从对话上下文自动 invoke。
 
 ### 路由表 —— 什么情况下进哪个文件夹
 

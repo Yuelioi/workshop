@@ -1,6 +1,6 @@
 {
   "name": "workshop",
   "description": "Persistent workshop directory protocol for AI coding sessions",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "contextFileName": "GEMINI.md"
 }

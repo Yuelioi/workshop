@@ -2,7 +2,7 @@
   "name": "workshop",
   "displayName": "Workshop",
   "description": "Persistent workshop directory protocol for AI coding sessions",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": {
     "name": "月离",
     "email": "yuelioi1210@gmail.com"

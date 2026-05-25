@@ -9,6 +9,45 @@ description: Use when a project has a workshop/ directory, when starting one, or
 
 `workshop/` is a directory convention organized by **when you read what** — a persistent workbench for AI-assisted coding. Write strictly: only content that changes future behavior, influences decisions, or gets referenced repeatedly.
 
+## First-time setup (no `workshop/` exists)
+
+If invoked in a project without a `workshop/` directory — typically because the user typed `/workshop:workshop-workflow` to bootstrap:
+
+1. Ask: **"No `workshop/` here. Create one? (minimal: just `board.md`)"**. Wait for confirmation.
+2. If yes, short interview:
+   - "Active focus — current main thread (5–15 words)?"
+   - "First 'next session' item — one concrete action?"
+3. Create `workshop/board.md` from this template, substituting `<...>` with the answers + today's date:
+
+   ```markdown
+   # Board — <project name>
+
+   **Last updated**: <YYYY-MM-DD> by <user>
+   **Active focus**: <from interview>
+
+   ## Next session
+
+   1. <from interview>
+
+   ## In flight (only artifacts whose state diverges from folder location)
+
+   | Artifact | State | Owner / Reason | Refs |
+   | --- | --- | --- | --- |
+   | _none_ | | | |
+
+   ## Recently finished (cap 5, FIFO)
+
+   - (none)
+
+   ## Hanging tasks
+
+   - (none)
+   ```
+4. Do NOT pre-create `scars/`, `playbooks/`, `specs/`, etc. — workshop's principle is "add folders when the need appears, not preemptively." `board.md` alone is the minimal contract.
+5. From the next session onward (Claude Code), the SessionStart hook auto-loads this skill whenever `workshop/` is detected — no need to re-invoke the slash.
+
+Then proceed with the Entry checklist below.
+
 ## Entry checklist (run at session start)
 
 1. Read `workshop/board.md` — focus on `Last updated` and the "next session" section.

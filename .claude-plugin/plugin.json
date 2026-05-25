@@ -1,6 +1,6 @@
 {
   "name": "workshop",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Persistent workshop directory protocol for AI coding sessions — session entry, scenario triggers, write gate, and exit ritual",
   "author": {
     "name": "月离",

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-05-26
+
+Patch release: README clarity + bootstrap UX + content cleanup. No protocol changes.
+
+### Added
+
+- **Bootstrap behavior in `workshop-workflow` skill**: when invoked in a project without `workshop/`, the skill now asks to create one, runs a short Active focus / Next session interview, and writes `workshop/board.md` directly. No more `install.sh --scaffold=minimal` round-trip required for Claude Code users.
+- **Slash commands table** in README (EN + ZH) — all 5 commands listed with auto-load behavior and one-line purpose. Replaces the scattered "Force-invoke" + "Explicit slash commands (v0.5.0+)" sections.
+
+### Changed
+
+- **README "Day 1" section** simplified to `/workshop:workshop-workflow` flow. The clone + `install.sh` path remains documented as the fallback for non-Claude tools.
+- **`workshop-workflow` skill** decoupled from `superpowers` plugin. Cross-references reframed as "Optional companions" — workshop is self-contained and accepts content from any source. Scenario triggers, exit-ritual heuristics, and folder-semantics no longer prescribe `superpowers:*` skills.
+- **Trims**: SKILL.md dropped redundant prose Transitions table (Mermaid covers it), "Why semi-implicit" paragraph, "Backlog specs" edge case, "Proactive scar resurfacing" explanation. Common mistakes merged with Red flags. Net auto-load token cost down ~20%.
+- **CHANGELOG** compressed: v0.3–v0.5 entries reduced to 1–2 lines each; "Known limitations" sections folded; per-commit citations dropped.
+- **Archived plan** `workshop/plans/finish/2026-05-25-v0.6-cleanup.md` compressed from 789 → 39 lines (step-by-step Edit prescriptions removed; outcome summary retained).
+
+### Fixed
+
+- **README.md** had a duplicate `🇨🇳 中文用户` Chinese-link line inside the `## Install` section (original top-of-file placement + middle convenience link both rendered). Removed the duplicate.
+- **`exit-ritual.md`** "Red flags" and "Common rationalizations" tables had significant overlap with `SKILL.md` Common mistakes; the two exit-ritual tables removed (one cross-link added instead).
+
 ## [0.8.0] — 2026-05-26
 
 Lifecycle deepening. State-machine depth and protocol-drift surfacing — QoL polish landed before the v1.0 format freeze.

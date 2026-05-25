@@ -119,22 +119,15 @@ After install, the skill auto-loads whenever your project has a `workshop/` dire
 
 ### Day 1 — bootstrap a new project
 
-```bash
-cd your-project
-git clone https://github.com/Yuelioi/workshop /tmp/workshop && \
-  /tmp/workshop/install.sh --scaffold=minimal
-# or copy scaffolds/minimal/workshop/ from this repo manually
+In Claude Code, `cd` into your project and type:
+
+```text
+/workshop:workshop-workflow
 ```
 
-Edit `workshop/board.md`:
+The skill detects the missing `workshop/` directory, asks you to confirm, then walks through a short interview (Active focus, first Next session item) and writes `workshop/board.md`. From the next session onward, the SessionStart hook auto-loads the skill whenever `workshop/` is present — no slash needed.
 
-```markdown
-**Active focus**: implement X feature
-## Next session
-1. Set up data model in src/models/X.ts
-```
-
-Open your AI tool in the project. The skill loads automatically.
+**Other tools / scripted setup**: clone this repo and run `install.sh --scaffold=minimal`, or copy `scaffolds/minimal/workshop/` into your project manually.
 
 ### What the AI does on every session
 
@@ -144,32 +137,17 @@ Open your AI tool in the project. The skill loads automatically.
 3. Executes the first "next session" item, or asks if state is inconsistent
 ```
 
-### Force-invoke in Claude Code
+### Slash commands
 
-If your project doesn't have `workshop/` yet, or the skill didn't auto-trigger:
+| Command | Auto-loads? | What it does |
+| --- | --- | --- |
+| `/workshop:workshop-workflow` | Yes — auto-injected via SessionStart hook when `workshop/` exists in cwd | Force-load the main protocol. **Also bootstraps**: if no `workshop/` exists, asks to create one and walks you through `board.md` setup. Then runs the entry checklist. |
+| `/workshop:session-enter` | No — explicit only | Re-anchor a drifted long session: re-read `board.md`, reconcile with `git status` / branch / stash / commit timeline, surface stale `wip/`. |
+| `/workshop:session-exit` | No — explicit only | Clean session wrap: classify new knowledge via (a)–(h) heuristics, update board, apply lifecycle transitions, prompt scar→playbook promotion when gate fires, optionally commit. |
+| `/workshop:emit-agents-md` | No — explicit only | Regenerate `AGENTS.md` at repo root from `workshop/board.md` (bridges to AGENTS.md-consuming tools: Codex CLI, Copilot, Cursor, Windsurf, Continue, Cody). Run after `board.md` changes. |
+| `/workshop:doctor` | No — explicit only | Audit `workshop/` for protocol drift across 8 categories (missing frontmatter, stale wip, dangling refs, board ↔ folder mismatch, stale Blockers, Recently finished length, AGENTS.md drift, orphan scars). Reports CRITICAL / WARNING / INFO — never auto-fixes. |
 
-```text
-/workshop:workshop-workflow
-```
-
-This loads the skill explicitly and runs the entry checklist.
-
-### Explicit slash commands (v0.5.0+)
-
-Two focused one-command triggers for re-anchoring mid-session:
-
-```text
-/workshop:session-enter   # run entry checklist explicitly (re-read board, reconcile)
-/workshop:session-exit    # run exit ritual explicitly (classify, update board, commit)
-```
-
-Both bypass model-auto-invocation — they fire only when you type the slash. Useful for:
-
-- Drifted a long session, want to re-anchor on the board (`session-enter`)
-- About to wrap, want the checklist enforced (no junk wip / hanging critiques) (`session-exit`)
-- Post-ship pause-and-record before moving on (`session-exit`)
-
-These are thin wrappers over `workshop-workflow`'s entry / exit sections — same rules, faster trigger.
+All commands except `workshop-workflow` carry `disable-model-invocation: true` — they fire only on explicit slash, never auto-triggered from conversation context.
 
 ### Routing table — what triggers what
 
