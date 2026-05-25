@@ -1,0 +1,23 @@
+{
+  "name": "workshop",
+  "displayName": "Workshop",
+  "description": "Persistent workshop directory protocol for AI coding sessions",
+  "version": "0.8.0",
+  "author": {
+    "name": "月离",
+    "email": "yuelioi1210@gmail.com"
+  },
+  "homepage": "https://github.com/Yuelioi/workshop",
+  "repository": "https://github.com/Yuelioi/workshop",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "workshop",
+    "session-continuity",
+    "ai-collaboration",
+    "memory",
+    "context-persistence",
+    "workflow"
+  ],
+  "skills": "./skills/"
+}

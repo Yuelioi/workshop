@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# SessionStart hook for workshop plugin.
+# Conditionally injects workshop-workflow SKILL.md when the current project
+# has a workshop/ directory. No workshop/ → no injection (zero token cost).
+
+set -euo pipefail
+
+# Determine plugin root directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Emit a JSON response keyed for the current AI platform.
+# Cursor expects additional_context (snake_case).
+# Claude Code expects hookSpecificOutput.additionalContext (nested).
+# Copilot CLI (v1.0.11+) and others expect additionalContext (top-level, SDK standard).
+emit_context() {
+    local payload="$1"
+    if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+        printf '{\n  "additional_context": "%s"\n}\n' "$payload"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+        printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$payload"
+    else
+        printf '{\n  "additionalContext": "%s"\n}\n' "$payload"
+    fi
+}
+
+# Conditional load: only inject when this project actually uses workshop.
+# PWD is the project root at SessionStart for all 3 supported platforms.
+if [ ! -d "${PWD}/workshop" ]; then
+    emit_context ""
+    exit 0
+fi
+
+# Read workshop-workflow skill content
+skill_content=$(cat "${PLUGIN_ROOT}/skills/workshop-workflow/SKILL.md" 2>&1 || echo "Error reading workshop-workflow skill")
+
+# Escape string for JSON embedding using bash parameter substitution.
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+skill_escaped=$(escape_for_json "$skill_content")
+
+session_context="<workshop-skill-auto-loaded>\nThis project has a workshop/ directory. The workshop-workflow skill is loaded below — follow it (entry checklist, scenario triggers, exit ritual). For deeper detail use the Skill tool to load companion files (exit-ritual / templates / folder-semantics).\n\n${skill_escaped}\n</workshop-skill-auto-loaded>"
+
+emit_context "$session_context"
+exit 0

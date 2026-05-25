@@ -1,0 +1,40 @@
+{
+  "name": "workshop",
+  "version": "0.8.0",
+  "description": "Persistent workshop directory protocol for AI coding sessions — session entry, scenario triggers, write gate, and exit ritual",
+  "author": {
+    "name": "月离",
+    "email": "yuelioi1210@gmail.com",
+    "url": "https://github.com/Yuelioi"
+  },
+  "homepage": "https://github.com/Yuelioi/workshop",
+  "repository": "https://github.com/Yuelioi/workshop",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "workshop",
+    "session-continuity",
+    "ai-collaboration",
+    "memory",
+    "context-persistence",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Workshop",
+    "shortDescription": "Persistent workshop directory for AI coding sessions",
+    "longDescription": "Workshop gives your AI assistant a persistent workbench across sessions — a directory convention plus a protocol for session entry, scenario-based triggers, strict write gating, and exit ritual. The next session knows what you were doing, why, and what to do next.",
+    "developerName": "月离 (Yuelioi)",
+    "category": "Coding",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "What were we working on last session?",
+      "Pick up the thread from workshop/board.md and continue."
+    ],
+    "websiteURL": "https://github.com/Yuelioi/workshop",
+    "screenshots": []
+  }
+}
