@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-05-28
+
+**Project renamed from `workshop` to `flightdeck`.** Aviation framing for operational discipline, continuity, and reliability. Single breaking-change window — post-v1.0 is additive-only.
+
+See [MIGRATION.md](MIGRATION.md) for upgrade steps. Design rationale: [flightdeck/landed/specs/2026-05-28-flightdeck-rebrand-design.md](flightdeck/landed/specs/2026-05-28-flightdeck-rebrand-design.md).
+
+### Renamed
+
+- **Project**: workshop → flightdeck (plugin name, marketplace identifier, repo URL, install commands)
+- **Folders**: `plans/` → `flight-plans/`, `playbooks/` → `checklists/`, `scars/` → `incident-reports/`, `reference/` → `charts/`, `critiques/` → `safety-reviews/`, `wip/` → `kneeboard/`. `specs/` and `sketches/` retained (no aviation equivalent improves them).
+- **Skill modules**: `workshop-workflow/` → `flightdeck-workflow/`, `session-enter/` → `preflight/`, `session-exit/` → `landing/`, `doctor/` → `walkaround/`. `emit-agents-md/` unchanged.
+- **Slash commands**: `/workshop:session-enter` → `/flightdeck:preflight`, `/workshop:session-exit` → `/flightdeck:landing`, `/workshop:doctor` → `/flightdeck:walkaround`, `/workshop:emit-agents-md` → `/flightdeck:emit-agents-md`.
+
+### Decomposed
+
+- **`board.md` split into three files** separated by read-time:
+  - `cockpit.md` — must-read every session entry (Active focus, Next session, Hanging tasks). **80-line hard ceiling.**
+  - `manifest.md` — on-demand (In flight artifacts, Blockers). No ceiling.
+  - `logbook.md` — rarely read (Recently finished FIFO 5, Deferred). Append-mostly history.
+
+### Restructured
+
+- **`*/finish/` archive subdirs promoted to top-level `landed/` umbrella**. Now `landed/flight-plans/` and `landed/specs/`. Eliminates the "active folder shadowing its own archive" inelegance.
+
+### Surfaced
+
+- **Governing principle** lifted from rebrand spec into `flightdeck-workflow/SKILL.md` and `AGENTS.md`: **"Semantic clarity outranks thematic consistency."** The metaphor is a tool, not a theme. Resist metaphor lock-in on future concepts.
+
+### Repository
+
+- GitHub repo renamed `Yuelioi/workshop` → `Yuelioi/flightdeck`. Auto-redirect in place. Plugin marketplace identifier updated across all 4 platforms.
+- VERSION: 0.8.1 → 1.0.0.
+
+### Deferred to v1.1+
+
+These were considered for v1.0 but punted to keep scope contained. Revisit when real usage demands each:
+
+- `briefing/` (domain context / glossary)
+- `blackbox/` (raw session-log persistence)
+- `crew-handover/` (human ↔ human / cross-AI handoff)
+- `experiments/` (long-running probes — already a `future expansion slot`)
+- Automated migration skill (manual `MIGRATION.md` was sufficient for user base = 1)
+
 ## [0.8.1] — 2026-05-26
 
 Patch release: README clarity + bootstrap UX + content cleanup. No protocol changes.

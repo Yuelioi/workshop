@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# Install all workshop skills into your AI tool's skills directory.
+# Install all flightdeck skills into your AI tool's skills directory.
 #
-# v0.5.0+: installs workshop-workflow + session-enter + session-exit. Earlier
-# versions installed only workshop-workflow.
+# v1.0.0+: installs flightdeck-workflow + preflight + landing + walkaround + emit-agents-md.
 #
 # Usage:
 #   ./install.sh                          # auto-detect AI tool, install skills
 #   ./install.sh --tool=claude            # explicit AI tool
-#   ./install.sh --scaffold=minimal       # also scaffold workshop/ in cwd
+#   ./install.sh --scaffold=minimal       # also scaffold flightdeck/ in cwd
 #   ./install.sh --tool=claude --force    # overwrite existing install
 #
 # Supported (active):  claude
@@ -88,7 +87,7 @@ install_claude() {
     if [[ ${#installed[@]} -gt 0 ]]; then
         echo "Installed skills: ${installed[*]}"
         echo "Target dir: $skills_dir"
-        echo "Verify: in a Claude Code session, run /workshop:session-enter or check the skill list."
+        echo "Verify: in a Claude Code session, run /flightdeck:preflight or check the skill list."
     fi
 }
 
@@ -104,8 +103,8 @@ install_stub() {
 
 invoke_scaffold() {
     local variant="$1"
-    local source="$repo_root/scaffolds/$variant/workshop"
-    local target="$(pwd)/workshop"
+    local source="$repo_root/scaffolds/$variant/flightdeck"
+    local target="$(pwd)/flightdeck"
 
     if [[ ! -d "$source" ]]; then
         echo "Scaffold variant not found: $source" >&2

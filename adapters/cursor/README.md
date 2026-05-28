@@ -11,17 +11,17 @@
 In Cursor Agent chat:
 
 ```text
-/add-plugin workshop
+/add-plugin flightdeck
 ```
 
-Or search "workshop" in the plugin marketplace.
+Or search "flightdeck" in the plugin marketplace.
 
 ## What "untested" means
 
-Cursor's skill / rules discovery has evolved across versions. The manifest follows the same shape as established plugins (e.g., superpowers), and the skill content under `skills/workshop-workflow/` is plain markdown — so it should load. What has **not** been verified:
+Cursor's skill / rules discovery has evolved across versions. The manifest follows the same shape as established plugins (e.g., superpowers), and the skill content under `skills/flightdeck-workflow/` is plain markdown — so it should load. What has **not** been verified:
 
 - That Cursor's plugin loader actually surfaces `SKILL.md` frontmatter to the agent.
-- That the skill triggers (auto-load on workshop/ projects, explicit invocation) work in Cursor's UX.
+- That the skill triggers (auto-load on flightdeck/ projects, explicit invocation) work in Cursor's UX.
 
 ## Likely Cursor-specific concerns
 
@@ -31,8 +31,8 @@ Cursor's skill / rules discovery has evolved across versions. The manifest follo
 ## How to verify (and flip the matrix to ✅ tested)
 
 1. Install on Cursor per the command above.
-2. Open a project with `workshop/board.md` populated.
-3. Start a fresh chat, ask "What were we doing?" — confirm the AI reads `board.md` first.
+2. Open a project with `flightdeck/cockpit.md` populated.
+3. Start a fresh chat, ask "What were we doing?" — confirm the AI reads `cockpit.md` first.
 4. Try one routing scenario from the README routing table.
 5. Open a PR that:
    - Updates the README compatibility matrix `⚠️ untested` → `✅ tested`.

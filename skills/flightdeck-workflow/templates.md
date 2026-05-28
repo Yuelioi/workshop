@@ -1,6 +1,6 @@
 # Templates
 
-Reusable file templates for `workshop/` files. Each template has a strict structure — deviation typically means the file should live in a different folder or be deleted.
+Reusable file templates for `flightdeck/` files. Each template has a strict structure — deviation typically means the file should live in a different folder or be deleted.
 
 ---
 
@@ -44,13 +44,13 @@ I assumed X, but in reality Y.
   - `active` — still applies to the current codebase
   - `obsolete` — the underlying constraint no longer exists (framework upgraded, code removed). Keep the file as history but mark.
   - `superseded` — folded into your project agent rules. Note the upgrade: `status: superseded → project-rules §<section>`. Do not delete.
-- **Promotion path**: scars promote in two stages — first to `playbooks/` (after a 3-criterion gate at `session-exit`), then to project agent rules (only if the playbook is also ignored and the scar continues to recur). Full gate criteria + workflow in [workshop-workflow/SKILL.md § Scar promotion gates](../workshop-workflow/SKILL.md#scar-promotion-gates).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A scar without them fails the workshop-workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
+- **Promotion path**: scars promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the scar continues to recur). Full gate criteria + workflow in [flightdeck-workflow/SKILL.md § Scar promotion gates](../flightdeck-workflow/SKILL.md#scar-promotion-gates).
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A scar without them fails the flightdeck-workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
   - `when_to_read: "before designing a recursive parser"` / `applies_to: [parser, recursion, stack-depth]`
   - `when_to_read: "before adding a new migration"` / `applies_to: [migration, schema, postgres]`
   - Keep tags **short and concrete** — `[parser, recursion]` beats `[code-quality, architecture]`. Generic tags don't help AI choose.
 - **Frontmatter `last_updated`**: bump on every meaningful change (Case append / status flip / advice rewrite). Lets AI judge staleness: a `last_updated` 2 years ago about a removed module is probably obsolete — promote to `status: obsolete` or delete. Lets users sort by recency when triaging.
-- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): include these if you want non-Claude AI tools that read `.cursor/rules/*.mdc`-style frontmatter to scope-load the scar by file path. Workshop's own routing uses `when_to_read` + `applies_to` — these MDC fields are purely a bridge for tools that don't honor workshop's SessionStart hook. Skip if not relevant to your toolchain.
+- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): include these if you want non-Claude AI tools that read `.cursor/rules/*.mdc`-style frontmatter to scope-load the scar by file path. Flightdeck's own routing uses `when_to_read` + `applies_to` — these MDC fields are purely a bridge for tools that don't honor flightdeck's SessionStart hook. Skip if not relevant to your toolchain.
 
 ---
 
@@ -90,11 +90,11 @@ applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 ### Rules
 
 - **One file per topic** (e.g. `verify.md`, `release.md`, `re-fixture.md`).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A playbook without them fails the workshop-workflow routing check — same hard-fail rule as scars. See `workshop-workflow/SKILL.md § Frontmatter requirements`.
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the flightdeck-workflow routing check — same hard-fail rule as incident reports. See `flightdeck-workflow/SKILL.md § Frontmatter requirements`.
 - **Frontmatter `last_updated`**: bump every time the playbook content actually changes (not for typo fixes). Lets AI / users judge staleness: a build playbook last touched 2 years ago in a fast-moving project is suspect.
 - **Promotion rule**: a process becomes a playbook **on the second occurrence**. First time is ad-hoc; second time is the pattern worth recording.
 - **No date prefix** — playbooks are stable resources, not log entries.
-- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): same as scars — include if you want tools reading `.cursor/rules/*.mdc`-style frontmatter to scope-load the playbook by file path. Workshop routing uses `when_to_read` + `applies_to`; the MDC fields are an interop bridge for non-Claude tools.
+- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): same as incident reports — include if you want tools reading `.cursor/rules/*.mdc`-style frontmatter to scope-load the checklist by file path. Flightdeck routing uses `when_to_read` + `applies_to`; the MDC fields are an interop bridge for non-Claude tools.
 
 ---
 
@@ -132,22 +132,22 @@ Whatever the session needs that doesn't yet fit a permanent home.>
 
 ### Rules
 
-- **`last_touched` is REQUIRED.** Update it every time you meaningfully edit the file. `session-enter` reads this to flag stale wip.
-- **Wip survives one session.** A `last_touched` predating the current session's start means the wip is stale. `session-enter` surfaces stale wip; `session-exit` BLOCKS until each stale wip is classified, deleted, or has a written defer reason.
+- **`last_touched` is REQUIRED.** Update it every time you meaningfully edit the file. `preflight` reads this to flag stale kneeboard files.
+- **Kneeboard file survives one session.** A `last_touched` predating the current session's start means the file is stale. `preflight` surfaces stale kneeboard files; `landing` BLOCKS until each stale kneeboard file is classified, deleted, or has a written defer reason.
 - **No filename convention required.** Use whatever scratch identifier helps (`debug-notes.md`, `gpt-paste`, `temp-spec-draft`). Short.
 - **Defer reason example**: if you genuinely need a wip carried across sessions, add a `defer_reason:` frontmatter field with a 1-line justification (e.g. `defer_reason: investigation paused on user vacation; resume 2026-06-15`). The defer reason makes the carry explicit and surfaceable.
 
 ### Pre-write checklist (hard gate)
 
-Before creating any new `wip/` file, the author (human or AI) must answer:
+Before creating any new `kneeboard/` file, the author (human or AI) must answer:
 
 1. **Will this content survive past this session?**
-   - **Yes** → STOP. wip is the wrong destination. The right home is probably `scars/` (bug + root cause), `playbooks/` (repeated procedure), `specs/` (design decision), `sketches/` (long-term idea), or `critiques/` (external feedback). Classify directly; do NOT create the wip file.
+   - **Yes** → STOP. kneeboard is the wrong destination. The right home is probably `incident-reports/` (bug + root cause), `checklists/` (repeated procedure), `specs/` (design decision), `sketches/` (long-term idea), or `safety-reviews/` (external feedback). Classify directly; do NOT create the kneeboard file.
    - **No** → proceed to (2).
 
 2. **What's the destination if it does survive past this session unexpectedly?** Pick one:
-   - **"delete at session-exit"** — confirm intent. If this is genuine scratch, fine. The wip will be classified-or-deleted at session-exit per the v0.6 TTL hard gate.
-   - **Named graduation target** — e.g., `defer_reason: this will graduate to scars/ if a root cause emerges`. The defer reason makes intent visible across sessions.
+   - **"delete at landing"** — confirm intent. If this is genuine scratch, fine. The kneeboard file will be classified-or-deleted at landing per the v0.6 TTL hard gate.
+   - **Named graduation target** — e.g., `defer_reason: this will graduate to incident-reports/ if a root cause emerges`. The defer reason makes intent visible across sessions.
 
 If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete choice: do **NOT** create the wip file. Either classify the content directly now, or hold the thought without committing it to disk. wip is short-lived scratch; ambiguity defeats that purpose. The checklist is prose discipline, not programmatic enforcement — but it exists so the author can't claim they didn't know.
 
@@ -170,7 +170,7 @@ If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete
 
 1. **[adopt]** <review point in 1 line> — <what specifically to change in the spec / code>
 2. **[reject]** <review point in 1 line> — <one-line why>
-3. **[defer]** <review point in 1 line> — <link to follow-up board item / sketch / new spec>
+3. **[defer]** <review point in 1 line> — <link to follow-up cockpit item / sketch / new spec>
 4. **[adopt]** <next point> — <change>
    ...
 
@@ -180,38 +180,65 @@ If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete
 ### Rules
 
 - **Every review point carries exactly one of `[adopt]` / `[reject]` / `[defer]`.** No bullet may exist without a tag. A bullet without a tag = the file is incomplete.
-- **Completion gate**: a critique file is "complete" iff every numbered point has a tag. Incomplete file = exit-blocking hanging task in `board.md` ("finish disposition of `critiques/<file>`"). The hanging task does not clear until the file is complete.
-- **`[defer]` must point somewhere**: link to a `board.md` future-work item or a sketch. Defer without a target is silently lost — that's the failure mode the tag exists to prevent.
+- **Completion gate**: a safety-review file is "complete" iff every numbered point has a tag. Incomplete file = exit-blocking hanging task in `cockpit.md` ("finish disposition of `safety-reviews/<file>`"). The hanging task does not clear until the file is complete.
+- **`[defer]` must point somewhere**: link to a `cockpit.md` future-work item or a sketch. Defer without a target is silently lost — that's the failure mode the tag exists to prevent.
 - **Long reviews (>1000 words)**: keep raw verbatim. Disposition section may grow long too — that's fine. The constraint is per-point tagging, not brevity.
 - **Splitting one review point into multiple**: allowed (and encouraged when one bullet bundles `[adopt]` + `[defer]` halves). Just enumerate each as its own line.
 
 ---
 
-## board.md
+## cockpit.md
 
 ```markdown
-# Board — <project>
+# Cockpit — <project>
 
 **Last updated**: YYYY-MM-DD by <who> (<one-line state summary>)
 **Active focus**: <current main thread, 5–15 words>
 
 ## Next session
 
-1. <first concrete action — must be executable by reading-board-only>
+1. <first concrete action — must be executable by reading-cockpit-only>
 2. <second>
 3. ...
 
+## Hanging tasks
+
+- [ ] Finish disposition of [safety-reviews/...](safety-reviews/...)
+- [ ] Classify or delete [kneeboard/...](kneeboard/...)
+```
+
+### Rules
+
+- **Length cap: 80 lines hard ceiling.** Past 80, cockpit has become a dump — trim immediately. Historical / contextual content belongs in `logbook.md` or `manifest.md`, not cockpit.
+- **`Active focus` is current state**, not history. Update it as the focus shifts.
+- **Hanging tasks block landing**: a session cannot be closed cleanly while a hanging task is open. Either resolve, or explicitly defer with a date.
+- **No metric tracking duplicated elsewhere** (test pass counts, build status). Single authoritative source — cockpit references via link.
+
+## manifest.md
+
+```markdown
+# Manifest — <project>
+
 ## In flight
 
-- <currently-open work, ~5 items max>
+| Artifact | State | Owner / Reason | Refs |
+| --- | --- | --- | --- |
+| _none_ | | | |
 
 ## Blockers
 
 - <items waiting on external decision / answer>
+```
 
-## Deferred
+### Rules
 
-- <items intentionally postponed; link to original source>
+- **Shows only divergent state.** Artifacts at their implicit location-state (pending spec, in-progress flight-plan) need no row here. Only `state: blocked`, `state: awaiting-review`, or `state: scrapped` artifacts appear.
+- **No hard ceiling.** Content is structurally bounded by the state-divergence rule.
+
+## logbook.md
+
+```markdown
+# Logbook — <project>
 
 ## Recently finished
 
@@ -222,58 +249,53 @@ If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete
 - <entry 5>
 - ... (cap at 5 entries — when adding new, drop oldest)
 
-## Hanging tasks
+## Deferred
 
-- [ ] Finish disposition of [critiques/...](critiques/...)
-- [ ] Classify or delete [wip/...](wip/...)
+- <items intentionally postponed; link to original source>
 ```
 
 ### Rules
 
-- **Length cap: 300 lines hard ceiling. Aim for < 200.** Past 300, board has become a dump — trim immediately (most often by capping `Recently finished` to 5 entries, and shortening per-entry summaries to ≤ 3 lines).
-- **`Recently finished` cap: 5 entries fixed (not by date).** Date-based caps drift — during atomic-PR weeks a "last 2 weeks" rule retains 30+ commits and bloats the board past 500 lines. Fixed count is stable. When adding a new entry, drop the oldest. Anything older lives in `git log`.
-- **`Active focus` is current state**, not history. Update it as the focus shifts.
-- **Hanging tasks block exit**: a session cannot be closed cleanly while a hanging task is open. Either resolve, or explicitly defer with a date.
-- **No metric tracking duplicated elsewhere** (test pass counts, build status). Single authoritative source — board references via link.
-- **Per-entry summary in `Recently finished` ≤ 3 lines.** If you want to write more, the artifact (commit message / archived plan file) is the right place — link to it instead.
+- **`Recently finished` cap: 5 entries fixed (not by date).** Date-based caps drift — during atomic-PR weeks a "last 2 weeks" rule retains 30+ commits and bloats logbook past 500 lines. Fixed count is stable. When adding a new entry, drop the oldest. Anything older lives in `git log`.
+- **Per-entry summary in `Recently finished` ≤ 3 lines.** If you want to write more, the artifact (commit message / archived flight-plan file) is the right place — link to it instead.
 
 ---
 
 ## INDEX.md
 
 ```markdown
-# workshop/ index
+# flightdeck/ index
 
 Last regenerated: YYYY-MM-DD
 
 ## Reading order for a new contributor
 
-1. [`board.md`](board.md) — current state and next actions
+1. [`cockpit.md`](cockpit.md) — current state and next actions
 2. [`specs/`](specs/) — design context
-3. [`scars/`](scars/) — known traps
-4. [`playbooks/`](playbooks/) — how to do common operations
+3. [`incident-reports/`](incident-reports/) — known traps
+4. [`checklists/`](checklists/) — how to do common operations
 
 ## Resource directories
 
-### scars/
+### incident-reports/
 
-<!-- AUTO-START: scars -->
-- [scar-topic-A](scars/topic-a.md) — one-line hook
-- [scar-topic-B](scars/topic-b.md) — one-line hook
-<!-- AUTO-END: scars -->
+<!-- AUTO-START: incident-reports -->
+- [scar-topic-A](incident-reports/topic-a.md) — one-line hook
+- [scar-topic-B](incident-reports/topic-b.md) — one-line hook
+<!-- AUTO-END: incident-reports -->
 
-### playbooks/
+### checklists/
 
-<!-- AUTO-START: playbooks -->
-- [verify](playbooks/verify.md) — pre-commit verification
-- [re-fixture](playbooks/re-fixture.md) — regenerate test fixtures
-<!-- AUTO-END: playbooks -->
+<!-- AUTO-START: checklists -->
+- [verify](checklists/verify.md) — pre-commit verification
+- [re-fixture](checklists/re-fixture.md) — regenerate test fixtures
+<!-- AUTO-END: checklists -->
 
-### reference/
+### charts/
 
-<!-- AUTO-START: reference -->
-- [boltframe-shape-layer](reference/boltframe-shape-layer.md) — competitor parser
-<!-- AUTO-END: reference -->
+<!-- AUTO-START: charts -->
+- [boltframe-shape-layer](charts/boltframe-shape-layer.md) — competitor parser
+<!-- AUTO-END: charts -->
 
 ## Curated notes
 
@@ -284,14 +306,14 @@ Anything outside `<!-- AUTO-* -->` markers is hand-curated. AI must not modify i
 
 - **AUTO sections**: AI rewrites between `<!-- AUTO-START: <name> -->` and `<!-- AUTO-END: <name> -->` markers. The AI must regenerate the entries from the actual files in that subdirectory.
 - **Outside markers is hand-curated**: AI must not touch this content. The reading-order and curated-notes sections belong to the human.
-- **Tool-agnostic protocol**: the AUTO marker is a documented convention. Any AI assistant supporting `workshop/` should honor it.
-- INDEX.md is **optional**. Add it only when the workshop has enough `scars/` and `playbooks/` that scanning is no longer easy.
+- **Tool-agnostic protocol**: the AUTO marker is a documented convention. Any AI assistant supporting `flightdeck/` should honor it.
+- INDEX.md is **optional**. Add it only when the flightdeck has enough `incident-reports/` and `checklists/` that scanning is no longer easy.
 
 ---
 
 ## Spec evolution markers (optional convention)
 
-When amending a long-lived spec — especially **backlog specs** in `specs/` that gain items over multiple sessions, or **specs revised after critique disposition** (e.g., the roadmap revision after a GPT review) — mark new / modified / removed items with prefix tags so the change history is grep-able and merge-friendly:
+When amending a long-lived spec — especially **backlog specs** in `specs/` that gain items over multiple sessions, or **specs revised after safety-review disposition** (e.g., the roadmap revision after a GPT review) — mark new / modified / removed items with prefix tags so the change history is grep-able and merge-friendly:
 
 - **`ADDED:`** — new item or section.
 - **`MODIFIED:`** — existing item changed. Note the old + new state inline if the change isn't self-evident.
@@ -319,9 +341,9 @@ Example from a revised backlog spec:
 When one file references another, use a markdown link with a one-word hook:
 
 ```markdown
-Known trap: [v2-aelayer structure](scars/v2-aelayer-structure.md)
-Procedure: [verify before commit](playbooks/verify.md)
-Decision: [why we chose splice over rewrite](specs/finish/2025-12-01-write-strategy-design.md)
+Known trap: [v2-aelayer structure](incident-reports/v2-aelayer-structure.md)
+Procedure: [verify before commit](checklists/verify.md)
+Decision: [why we chose splice over rewrite](landed/specs/2025-12-01-write-strategy-design.md)
 ```
 
 Why this matters:

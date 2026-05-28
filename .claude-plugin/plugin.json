@@ -1,20 +1,21 @@
 {
-  "name": "workshop",
-  "version": "0.8.1",
-  "description": "Persistent workshop directory protocol for AI coding sessions — session entry, scenario triggers, write gate, and exit ritual",
+  "name": "flightdeck",
+  "version": "1.0.0",
+  "description": "Operational protocol for AI-assisted engineering sessions — preflight, scenario triggers, write gate, and landing ritual",
   "author": {
     "name": "月离",
     "email": "yuelioi1210@gmail.com"
   },
-  "homepage": "https://github.com/Yuelioi/workshop",
-  "repository": "https://github.com/Yuelioi/workshop",
+  "homepage": "https://github.com/Yuelioi/flightdeck",
+  "repository": "https://github.com/Yuelioi/flightdeck",
   "license": "MIT",
   "keywords": [
     "skills",
-    "workshop",
+    "flightdeck",
     "session-continuity",
     "ai-collaboration",
-    "memory",
+    "operations",
+    "reliability",
     "context-persistence",
     "workflow"
   ],

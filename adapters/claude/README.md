@@ -12,22 +12,22 @@
 In any Claude Code session:
 
 ```text
-/plugin marketplace add Yuelioi/workshop
-/plugin install workshop@workshop-marketplace
+/plugin marketplace add Yuelioi/flightdeck
+/plugin install flightdeck@flightdeck-marketplace
 ```
 
-To update: re-run `/plugin install`. To uninstall: `/plugin uninstall workshop`.
+To update: re-run `/plugin install`. To uninstall: `/plugin uninstall flightdeck`.
 
 This is the recommended path — it gives proper version tracking and lifecycle.
 
 ## Install — alternative (direct copy)
 
-For users who don't want to use the plugin marketplace, the installers at the repo root copy `skills/workshop-workflow/` directly into the user-level Claude Code skills directory.
+For users who don't want to use the plugin marketplace, the installers at the repo root copy `skills/flightdeck-workflow/` directly into the user-level Claude Code skills directory.
 
 | OS | Target path |
 | --- | --- |
-| macOS / Linux | `~/.claude/skills/workshop-workflow/` |
-| Windows | `%USERPROFILE%\.claude\skills\workshop-workflow\` |
+| macOS / Linux | `~/.claude/skills/flightdeck-workflow/` |
+| Windows | `%USERPROFILE%\.claude\skills\flightdeck-workflow\` |
 
 ```powershell
 .\install.ps1
@@ -37,17 +37,21 @@ For users who don't want to use the plugin marketplace, the installers at the re
 ./install.sh
 ```
 
-After install (v0.5.0+):
+After install:
 
 ```
-~/.claude/skills/workshop-workflow/   # auto-loaded via SessionStart hook
+~/.claude/skills/flightdeck-workflow/   # auto-loaded via SessionStart hook
 ├── SKILL.md
 ├── folder-semantics.md
 ├── templates.md
 └── exit-ritual.md
-~/.claude/skills/session-enter/       # /workshop:session-enter explicit trigger
+~/.claude/skills/preflight/             # /flightdeck:preflight explicit trigger
 └── SKILL.md
-~/.claude/skills/session-exit/        # /workshop:session-exit explicit trigger
+~/.claude/skills/landing/               # /flightdeck:landing explicit trigger
+└── SKILL.md
+~/.claude/skills/walkaround/            # /flightdeck:walkaround integrity audit
+└── SKILL.md
+~/.claude/skills/emit-agents-md/        # /flightdeck:emit-agents-md AGENTS.md emitter
 └── SKILL.md
 ```
 
@@ -56,37 +60,37 @@ After install (v0.5.0+):
 After install (either path), in a Claude Code session:
 
 1. Start a session in any project directory.
-2. The `workshop-workflow` skill should appear in the available skills list with description starting "Use when a project has a workshop/ directory...".
-3. Force-invoke with `/workshop:workshop-workflow` and confirm the entry checklist runs.
-4. (v0.5.0+) Force-invoke `/workshop:session-enter` and `/workshop:session-exit` — these should run the corresponding rituals explicitly.
+2. The `flightdeck-workflow` skill should appear in the available skills list with description starting "Use when a project has a flightdeck/ directory...".
+3. Force-invoke with `/flightdeck:flightdeck-workflow` and confirm the entry checklist runs.
+4. Force-invoke `/flightdeck:preflight` and `/flightdeck:landing` — these should run the corresponding rituals explicitly.
 
 If the skill does not appear:
-- Direct install: check `ls ~/.claude/skills/workshop-workflow/SKILL.md` exists.
+- Direct install: check `ls ~/.claude/skills/flightdeck-workflow/SKILL.md` exists.
 - Marketplace install: check `~/.claude/plugins/` for the cached plugin.
 - Either: verify SKILL.md frontmatter is intact (`name:` and `description:`).
 
 ## How invocation works
 
-- The skill is loaded automatically when Claude detects its description matches the session context (a project with `workshop/`).
-- Force-invoke via `/workshop-workflow`.
-- Workshop is **self-contained**: it does not require any other plugin to function. If you also have `superpowers` installed, the SKILL.md mentions its `brainstorming` / `writing-plans` skills as optional companions — fine if present, fine if absent.
+- The skill is loaded automatically when Claude detects its description matches the session context (a project with `flightdeck/`).
+- Force-invoke via `/flightdeck-workflow`.
+- Flightdeck is **self-contained**: it does not require any other plugin to function. If you also have `superpowers` installed, the SKILL.md mentions its `brainstorming` / `writing-plans` skills as optional companions — fine if present, fine if absent.
 
 ## Uninstall
 
 Marketplace path:
 
 ```text
-/plugin uninstall workshop
+/plugin uninstall flightdeck
 ```
 
 Direct path:
 
 ```bash
 # macOS / Linux
-rm -rf ~/.claude/skills/workshop-workflow
+rm -rf ~/.claude/skills/flightdeck-workflow
 ```
 
 ```powershell
 # Windows
-Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\workshop-workflow"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\flightdeck-workflow"
 ```
