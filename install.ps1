@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Detects installed AI tools and copies every skills/* subdir to the
-    appropriate target. v1.0.0+ installs flightdeck-workflow + preflight +
+    appropriate target. v1.0.0+ installs workflow + preflight +
     landing + walkaround + emit-agents-md. Optionally scaffolds a flightdeck/
     directory in the current working directory.
 

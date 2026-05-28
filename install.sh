@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install all flightdeck skills into your AI tool's skills directory.
 #
-# v1.0.0+: installs flightdeck-workflow + preflight + landing + walkaround + emit-agents-md.
+# v1.0.0+: installs workflow + preflight + landing + walkaround + emit-agents-md.
 #
 # Usage:
 #   ./install.sh                          # auto-detect AI tool, install skills

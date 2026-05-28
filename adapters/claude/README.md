@@ -22,12 +22,12 @@ This is the recommended path — it gives proper version tracking and lifecycle.
 
 ## Install — alternative (direct copy)
 
-For users who don't want to use the plugin marketplace, the installers at the repo root copy `skills/flightdeck-workflow/` directly into the user-level Claude Code skills directory.
+For users who don't want to use the plugin marketplace, the installers at the repo root copy `skills/workflow/` directly into the user-level Claude Code skills directory.
 
 | OS | Target path |
 | --- | --- |
-| macOS / Linux | `~/.claude/skills/flightdeck-workflow/` |
-| Windows | `%USERPROFILE%\.claude\skills\flightdeck-workflow\` |
+| macOS / Linux | `~/.claude/skills/workflow/` |
+| Windows | `%USERPROFILE%\.claude\skills\workflow\` |
 
 ```powershell
 .\install.ps1
@@ -40,7 +40,7 @@ For users who don't want to use the plugin marketplace, the installers at the re
 After install:
 
 ```
-~/.claude/skills/flightdeck-workflow/   # auto-loaded via SessionStart hook
+~/.claude/skills/workflow/   # auto-loaded via SessionStart hook
 ├── SKILL.md
 ├── folder-semantics.md
 ├── templates.md
@@ -60,19 +60,19 @@ After install:
 After install (either path), in a Claude Code session:
 
 1. Start a session in any project directory.
-2. The `flightdeck-workflow` skill should appear in the available skills list with description starting "Use when a project has a flightdeck/ directory...".
-3. Force-invoke with `/flightdeck:flightdeck-workflow` and confirm the entry checklist runs.
+2. The `workflow` skill should appear in the available skills list with description starting "Use when a project has a flightdeck/ directory...".
+3. Force-invoke with `/flightdeck:workflow` and confirm the entry checklist runs.
 4. Force-invoke `/flightdeck:preflight` and `/flightdeck:landing` — these should run the corresponding rituals explicitly.
 
 If the skill does not appear:
-- Direct install: check `ls ~/.claude/skills/flightdeck-workflow/SKILL.md` exists.
+- Direct install: check `ls ~/.claude/skills/workflow/SKILL.md` exists.
 - Marketplace install: check `~/.claude/plugins/` for the cached plugin.
 - Either: verify SKILL.md frontmatter is intact (`name:` and `description:`).
 
 ## How invocation works
 
 - The skill is loaded automatically when Claude detects its description matches the session context (a project with `flightdeck/`).
-- Force-invoke via `/flightdeck-workflow`.
+- Force-invoke via `/workflow`.
 - Flightdeck is **self-contained**: it does not require any other plugin to function. If you also have `superpowers` installed, the SKILL.md mentions its `brainstorming` / `writing-plans` skills as optional companions — fine if present, fine if absent.
 
 ## Uninstall
@@ -87,10 +87,10 @@ Direct path:
 
 ```bash
 # macOS / Linux
-rm -rf ~/.claude/skills/flightdeck-workflow
+rm -rf ~/.claude/skills/workflow
 ```
 
 ```powershell
 # Windows
-Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\flightdeck-workflow"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\workflow"
 ```

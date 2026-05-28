@@ -22,11 +22,11 @@ In the Codex app, click `Plugins` in the sidebar, find `Flightdeck`, click `+` a
 
 ## What "untested" means
 
-The manifest is structured the same as the working Claude one, and the skill content under `skills/flightdeck-workflow/` is plain tool-agnostic markdown — so installation should succeed and Codex should discover the skill. What has **not** been verified:
+The manifest is structured the same as the working Claude one, and the skill content under `skills/workflow/` is plain tool-agnostic markdown — so installation should succeed and Codex should discover the skill. What has **not** been verified:
 
 - That Codex's skill-loading mechanism actually picks up `SKILL.md` with our frontmatter.
 - That `description` triggers as expected when a project has `flightdeck/`.
-- That `/flightdeck-workflow`-style force-invoke works (Codex may use different syntax).
+- That `/workflow`-style force-invoke works (Codex may use different syntax).
 
 ## How to verify (and flip the matrix to ✅ tested)
 

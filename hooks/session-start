@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SessionStart hook for flightdeck plugin.
-# Conditionally injects flightdeck-workflow SKILL.md when the current project
+# Conditionally injects workflow SKILL.md when the current project
 # has a flightdeck/ directory. No flightdeck/ → no injection (zero token cost).
 
 set -euo pipefail
@@ -31,8 +31,8 @@ if [ ! -d "${PWD}/flightdeck" ]; then
     exit 0
 fi
 
-# Read flightdeck-workflow skill content
-skill_content=$(cat "${PLUGIN_ROOT}/skills/flightdeck-workflow/SKILL.md" 2>&1 || echo "Error reading flightdeck-workflow skill")
+# Read workflow skill content
+skill_content=$(cat "${PLUGIN_ROOT}/skills/workflow/SKILL.md" 2>&1 || echo "Error reading workflow skill")
 
 # Escape string for JSON embedding using bash parameter substitution.
 escape_for_json() {
@@ -47,7 +47,7 @@ escape_for_json() {
 
 skill_escaped=$(escape_for_json "$skill_content")
 
-session_context="<flightdeck-skill-auto-loaded>\nThis project has a flightdeck/ directory. The flightdeck-workflow skill is loaded below — follow it (entry checklist, scenario triggers, landing ritual). For deeper detail use the Skill tool to load companion files (exit-ritual / templates / folder-semantics).\n\n${skill_escaped}\n</flightdeck-skill-auto-loaded>"
+session_context="<flightdeck-skill-auto-loaded>\nThis project has a flightdeck/ directory. The workflow skill is loaded below — follow it (entry checklist, scenario triggers, landing ritual). For deeper detail use the Skill tool to load companion files (exit-ritual / templates / folder-semantics).\n\n${skill_escaped}\n</flightdeck-skill-auto-loaded>"
 
 emit_context "$session_context"
 exit 0

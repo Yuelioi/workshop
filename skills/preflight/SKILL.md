@@ -6,10 +6,10 @@ disable-model-invocation: true
 
 # Flightdeck Preflight
 
-User-triggered explicit entry ritual. Same logic as the [flightdeck-workflow](../flightdeck-workflow/SKILL.md) skill's Entry Checklist section, exposed as a one-command slash for cases where:
+User-triggered explicit entry ritual. Same logic as the [workflow](../workflow/SKILL.md) skill's Entry Checklist section, exposed as a one-command slash for cases where:
 
 - A long session has gone off the rails and you want to re-anchor on the cockpit.
-- The auto-loaded `flightdeck-workflow` didn't fire (e.g. fresh `flightdeck/` mid-session).
+- The auto-loaded `workflow` didn't fire (e.g. fresh `flightdeck/` mid-session).
 - The user wants a clean, predictable starting point before delegating to other skills.
 
 ## Run this checklist exactly
@@ -71,4 +71,4 @@ Resolve which?
 - Don't load every incident-report/checklist upfront — they're routed by `applies_to` metadata when relevant tasks come up.
 - Don't grep the codebase looking for "things to do" — cockpit.md is authoritative.
 
-For deeper background on the flightdeck convention (folder semantics, scenario triggers during the session, write gate), see [flightdeck-workflow/SKILL.md](../flightdeck-workflow/SKILL.md).
+For deeper background on the flightdeck convention (folder semantics, scenario triggers during the session, write gate), see [workflow/SKILL.md](../workflow/SKILL.md).

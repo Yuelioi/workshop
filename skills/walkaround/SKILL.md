@@ -30,13 +30,13 @@ Run all 8 in order. For each, report findings with the severity tag.
 For each `flightdeck/incident-reports/*.md` and `flightdeck/checklists/*.md` (NOT in `landed/`):
 - Read the frontmatter (between `---` markers).
 - Confirm `when_to_read`, `applies_to`, `last_updated` are ALL present.
-- If any missing: **CRITICAL** — file is invisible to flightdeck routing per the v0.6 hard-fail rule (see [flightdeck-workflow/SKILL.md § Frontmatter requirements](../flightdeck-workflow/SKILL.md#frontmatter-requirements-hard-fail)).
+- If any missing: **CRITICAL** — file is invisible to flightdeck routing per the v0.6 hard-fail rule (see [workflow/SKILL.md § Frontmatter requirements](../workflow/SKILL.md#frontmatter-requirements-hard-fail)).
 
 ### 2. Stale kneeboard files (WARNING on miss)
 
 For each `flightdeck/kneeboard/*.md`:
 - Read frontmatter for `last_touched:`.
-- If missing: **WARNING** — `last_touched:` is required (see [templates.md § kneeboard](../flightdeck-workflow/templates.md#kneeboard)).
+- If missing: **WARNING** — `last_touched:` is required (see [templates.md § kneeboard](../workflow/templates.md#kneeboard)).
 - If present but date predates the most recent commit by ≥ 7 days: **WARNING** — file has survived multiple landings. Either has a `defer_reason:` (acceptable, report as INFO instead) or should have been classified/deleted.
 
 (Walkaround uses a stricter 7-day default than landing's "predates current session" — walkaround catches lingering kneeboard files that survived multiple landings.)

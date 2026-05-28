@@ -44,8 +44,8 @@ I assumed X, but in reality Y.
   - `active` — still applies to the current codebase
   - `obsolete` — the underlying constraint no longer exists (framework upgraded, code removed). Keep the file as history but mark.
   - `superseded` — folded into your project agent rules. Note the upgrade: `status: superseded → project-rules §<section>`. Do not delete.
-- **Promotion path**: scars promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the scar continues to recur). Full gate criteria + workflow in [flightdeck-workflow/SKILL.md § Scar promotion gates](../flightdeck-workflow/SKILL.md#scar-promotion-gates).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A scar without them fails the flightdeck-workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
+- **Promotion path**: scars promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the scar continues to recur). Full gate criteria + workflow in [workflow/SKILL.md § Scar promotion gates](../workflow/SKILL.md#scar-promotion-gates).
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A scar without them fails the workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
   - `when_to_read: "before designing a recursive parser"` / `applies_to: [parser, recursion, stack-depth]`
   - `when_to_read: "before adding a new migration"` / `applies_to: [migration, schema, postgres]`
   - Keep tags **short and concrete** — `[parser, recursion]` beats `[code-quality, architecture]`. Generic tags don't help AI choose.
@@ -90,7 +90,7 @@ applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 ### Rules
 
 - **One file per topic** (e.g. `verify.md`, `release.md`, `re-fixture.md`).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the flightdeck-workflow routing check — same hard-fail rule as incident reports. See `flightdeck-workflow/SKILL.md § Frontmatter requirements`.
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the workflow routing check — same hard-fail rule as incident reports. See `workflow/SKILL.md § Frontmatter requirements`.
 - **Frontmatter `last_updated`**: bump every time the playbook content actually changes (not for typo fixes). Lets AI / users judge staleness: a build playbook last touched 2 years ago in a fast-moving project is suspect.
 - **Promotion rule**: a process becomes a playbook **on the second occurrence**. First time is ad-hoc; second time is the pattern worth recording.
 - **No date prefix** — playbooks are stable resources, not log entries.

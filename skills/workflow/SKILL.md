@@ -1,9 +1,9 @@
 ---
-name: flightdeck-workflow
+name: workflow
 description: Use when a project has a flightdeck/ directory, when starting one, or when AI session context needs to survive across sessions
 ---
 
-# flightdeck-workflow
+# workflow
 
 ## Core principle
 

@@ -17,8 +17,8 @@ See [MIGRATION.md](MIGRATION.md) for upgrade steps. Design rationale: [flightdec
 
 - **Project**: workshop → flightdeck (plugin name, marketplace identifier, repo URL, install commands)
 - **Folders**: `plans/` → `flight-plans/`, `playbooks/` → `checklists/`, `scars/` → `incident-reports/`, `reference/` → `charts/`, `critiques/` → `safety-reviews/`, `wip/` → `kneeboard/`. `specs/` and `sketches/` retained (no aviation equivalent improves them).
-- **Skill modules**: `workshop-workflow/` → `flightdeck-workflow/`, `session-enter/` → `preflight/`, `session-exit/` → `landing/`, `doctor/` → `walkaround/`. `emit-agents-md/` unchanged.
-- **Slash commands**: `/workshop:session-enter` → `/flightdeck:preflight`, `/workshop:session-exit` → `/flightdeck:landing`, `/workshop:doctor` → `/flightdeck:walkaround`, `/workshop:emit-agents-md` → `/flightdeck:emit-agents-md`.
+- **Skill modules**: `workshop-workflow/` → `workflow/`, `session-enter/` → `preflight/`, `session-exit/` → `landing/`, `doctor/` → `walkaround/`. `emit-agents-md/` unchanged.
+- **Slash commands**: `/workshop:workshop-workflow` → `/flightdeck:workflow`, `/workshop:session-enter` → `/flightdeck:preflight`, `/workshop:session-exit` → `/flightdeck:landing`, `/workshop:doctor` → `/flightdeck:walkaround`, `/workshop:emit-agents-md` → `/flightdeck:emit-agents-md`. (Main skill module renamed `flightdeck-workflow` → `workflow` to avoid the awkward `/flightdeck:flightdeck-workflow` slash form — clean reads as `/flightdeck:workflow`.)
 
 ### Decomposed
 
@@ -33,7 +33,7 @@ See [MIGRATION.md](MIGRATION.md) for upgrade steps. Design rationale: [flightdec
 
 ### Surfaced
 
-- **Governing principle** lifted from rebrand spec into `flightdeck-workflow/SKILL.md` and `AGENTS.md`: **"Semantic clarity outranks thematic consistency."** The metaphor is a tool, not a theme. Resist metaphor lock-in on future concepts.
+- **Governing principle** lifted from rebrand spec into `workflow/SKILL.md` and `AGENTS.md`: **"Semantic clarity outranks thematic consistency."** The metaphor is a tool, not a theme. Resist metaphor lock-in on future concepts.
 
 ### Repository
 
