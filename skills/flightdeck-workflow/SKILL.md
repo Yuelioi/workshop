@@ -85,6 +85,17 @@ The three new files are **peers** (they describe different facets: cockpit = wha
 
 > **"Project agent rules"** = your project's top-level AI instructions file — whatever your AI tool reads on every session.
 
+## Design philosophy
+
+> **Semantic clarity outranks thematic consistency.**
+
+When naming or structuring decisions trigger a conflict between "fits the aviation metaphor" and "reads correctly", clarity wins. The flightdeck metaphor is used because it sharpens operational intent — *not* as a theme to be applied uniformly. Two folders (`specs/`, `sketches/`) intentionally use neutral names because no aviation equivalent improves them. Future concepts face the same test.
+
+Reject:
+- aviation roleplay / sci-fi theming / meme interfaces / gamified agent cosplay
+- "cute but unclear" terms (e.g., `/stuck → /request-vector` was rejected during rebrand — `/stuck` already reads correctly)
+- forcing every new term into the metaphor
+
 ## Lifecycle of specs and plans
 
 Specs / flight-plans pass through 6 states. **Default state is inferred from file location** — flightdeck only asks you to maintain explicit state when the truth diverges from location.
