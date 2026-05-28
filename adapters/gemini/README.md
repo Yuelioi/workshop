@@ -10,13 +10,13 @@
 ## Install
 
 ```bash
-gemini extensions install https://github.com/Yuelioi/workshop
+gemini extensions install https://github.com/Yuelioi/flightdeck
 ```
 
 Update later:
 
 ```bash
-gemini extensions update workshop
+gemini extensions update flightdeck
 ```
 
 ## What "untested" means
@@ -24,18 +24,18 @@ gemini extensions update workshop
 Gemini CLI's extension mechanism loads `GEMINI.md` as project / session context. Our `GEMINI.md` uses the `@` include syntax to pull in the four skill files. This means Gemini sees all the protocol content directly, not as a discoverable "skill" with a trigger condition. What has **not** been verified:
 
 - That Gemini honors the `@` include syntax and resolves all four files.
-- That auto-triggering on `workshop/` works (Gemini may not have skill-trigger semantics — it may simply load the protocol every session).
+- That auto-triggering on `flightdeck/` works (Gemini may not have skill-trigger semantics — it may simply load the protocol every session).
 
 ## Likely Gemini-specific concerns
 
-- **No conditional loading**: unlike Claude's skill triggers, Gemini may load the protocol unconditionally. This is fine for projects that have `workshop/` but adds noise for projects that don't.
+- **No conditional loading**: unlike Claude's skill triggers, Gemini may load the protocol unconditionally. This is fine for projects that have `flightdeck/` but adds noise for projects that don't.
 - **Token cost**: GEMINI.md @-includes pull in ~2000+ words every session.
 
 ## How to verify (and flip the matrix to ✅ tested)
 
 1. Install on Gemini CLI per the command above.
-2. Open a project with `workshop/board.md` populated.
-3. Start a fresh session, ask "What were we doing?" — confirm the AI reads `board.md` first.
+2. Open a project with `flightdeck/cockpit.md` populated.
+3. Start a fresh session, ask "What were we doing?" — confirm the AI reads `cockpit.md` first.
 4. Try one routing scenario from the README routing table.
 5. Open a PR that:
    - Updates the README compatibility matrix `⚠️ untested` → `✅ tested`.

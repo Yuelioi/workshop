@@ -14,26 +14,26 @@
 /plugins
 ```
 
-Then search "workshop" → select → `Install Plugin`.
+Then search "flightdeck" → select → `Install Plugin`.
 
 ### Codex App
 
-In the Codex app, click `Plugins` in the sidebar, find `Workshop`, click `+` and follow prompts.
+In the Codex app, click `Plugins` in the sidebar, find `Flightdeck`, click `+` and follow prompts.
 
 ## What "untested" means
 
-The manifest is structured the same as the working Claude one, and the skill content under `skills/workshop-workflow/` is plain tool-agnostic markdown — so installation should succeed and Codex should discover the skill. What has **not** been verified:
+The manifest is structured the same as the working Claude one, and the skill content under `skills/flightdeck-workflow/` is plain tool-agnostic markdown — so installation should succeed and Codex should discover the skill. What has **not** been verified:
 
 - That Codex's skill-loading mechanism actually picks up `SKILL.md` with our frontmatter.
-- That `description` triggers as expected when a project has `workshop/`.
-- That `/workshop-workflow`-style force-invoke works (Codex may use different syntax).
+- That `description` triggers as expected when a project has `flightdeck/`.
+- That `/flightdeck-workflow`-style force-invoke works (Codex may use different syntax).
 
 ## How to verify (and flip the matrix to ✅ tested)
 
 1. Install on Codex per the commands above.
-2. Open a project with `workshop/board.md` populated.
-3. Start a fresh session, ask "What were we doing?" — confirm the AI reads `board.md` first.
-4. Try one routing scenario from the README routing table (e.g., "Why did the migration break?" should consult `scars/`).
+2. Open a project with `flightdeck/cockpit.md` populated.
+3. Start a fresh session, ask "What were we doing?" — confirm the AI reads `cockpit.md` first.
+4. Try one routing scenario from the README routing table (e.g., "Why did the migration break?" should consult `incident-reports/`).
 5. Open a PR that:
    - Updates the README compatibility matrix `⚠️ untested` → `✅ tested`.
    - Pastes the verification transcript here.
