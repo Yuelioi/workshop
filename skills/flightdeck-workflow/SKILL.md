@@ -1,9 +1,9 @@
 ---
-name: workshop-workflow
-description: Use when a project has a workshop/ directory, when starting one, or when AI session context needs to survive across sessions
+name: flightdeck-workflow
+description: Use when a project has a flightdeck/ directory, when starting one, or when AI session context needs to survive across sessions
 ---
 
-# workshop-workflow
+# flightdeck-workflow
 
 ## Core principle
 

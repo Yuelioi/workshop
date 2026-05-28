@@ -1,12 +1,12 @@
 ---
-name: session-enter
-description: Use when explicitly invoking the workshop entry ritual — reconciles board.md against repo state, runs staleness check, and reports the first "next session" item. Triggered by `/workshop:session-enter`.
+name: preflight
+description: Use when explicitly invoking the flightdeck entry ritual — reconciles cockpit.md against repo state, runs staleness check, and reports the first "next session" item. Triggered by `/flightdeck:preflight`.
 disable-model-invocation: true
 ---
 
-# Workshop Session Entry
+# Flightdeck Preflight
 
-User-triggered explicit entry ritual. Same logic as the [workshop-workflow](../workshop-workflow/SKILL.md) skill's Entry Checklist section, exposed as a one-command slash for cases where:
+User-triggered explicit entry ritual. Same logic as the [flightdeck-workflow](../flightdeck-workflow/SKILL.md) skill's Entry Checklist section, exposed as a one-command slash for cases where:
 
 - A long session has gone off the rails and you want to re-anchor on the board.
 - The auto-loaded `workshop-workflow` didn't fire (e.g. fresh `workshop/` mid-session).

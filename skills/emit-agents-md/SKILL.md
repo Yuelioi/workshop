@@ -1,12 +1,12 @@
 ---
 name: emit-agents-md
-description: Use when explicitly invoking the workshop AGENTS.md emitter — regenerates `AGENTS.md` at repo root from `workshop/board.md` between fenced markers, preserving any hand-authored content outside the markers. Triggered by `/workshop:emit-agents-md`.
+description: Use when explicitly invoking the flightdeck AGENTS.md emitter — regenerates `AGENTS.md` at repo root from `flightdeck/cockpit.md` between fenced markers, preserving any hand-authored content outside the markers. Triggered by `/flightdeck:emit-agents-md`.
 disable-model-invocation: true
 ---
 
-# Workshop AGENTS.md Emitter
+# Flightdeck AGENTS.md Emitter
 
-User-triggered regeneration of `AGENTS.md` at repo root from the current state of `workshop/board.md`. Use after `board.md` changes (e.g., at session-exit) so non-Claude AI tools (Codex CLI, Copilot, Cursor, Windsurf, Continue, Cody, etc.) reading `AGENTS.md` see fresh project state.
+User-triggered regeneration of `AGENTS.md` at repo root from the current state of `flightdeck/cockpit.md`. Use after `cockpit.md` changes (e.g., at landing) so non-Claude AI tools (Codex CLI, Copilot, Cursor, Windsurf, Continue, Cody, etc.) reading `AGENTS.md` see fresh project state.
 
 ## Why this exists
 

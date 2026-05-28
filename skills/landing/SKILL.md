@@ -1,12 +1,12 @@
 ---
-name: session-exit
-description: Use when explicitly invoking the workshop exit ritual — classifies new knowledge from the session, updates board.md, blocks on hanging tasks, optionally commits. Triggered by `/workshop:session-exit`.
+name: landing
+description: Use when explicitly invoking the flightdeck landing ritual — classifies new knowledge from the session, updates cockpit.md, blocks on hanging tasks, optionally commits. Triggered by `/flightdeck:landing`.
 disable-model-invocation: true
 ---
 
-# Workshop Session Exit
+# Flightdeck Landing
 
-User-triggered explicit exit ritual. Thin entry-point that runs the [exit-ritual.md](../workshop-workflow/exit-ritual.md) decision tree as a one-command slash. Use for:
+User-triggered explicit landing ritual. Thin entry-point that runs the [exit-ritual.md](../flightdeck-workflow/exit-ritual.md) decision tree as a one-command slash. Use for:
 
 - Wrapping up a session cleanly before context compression.
 - Natural pause point (ship complete / brainstorm done) — closing checks before moving on.

@@ -1,12 +1,12 @@
 ---
-name: doctor
-description: Use when explicitly invoking the workshop integrity audit — checks board.md / specs / plans / scars / playbooks / wip for protocol drift, dangling references, stale entries, and lifecycle mismatches. Triggered by `/workshop:doctor`.
+name: walkaround
+description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / manifest.md / logbook.md / specs / flight-plans / incident-reports / checklists / kneeboard for protocol drift, dangling references, stale entries, and lifecycle mismatches. Triggered by `/flightdeck:walkaround`.
 disable-model-invocation: true
 ---
 
-# Workshop Doctor
+# Flightdeck Walkaround
 
-User-triggered integrity audit of a workshop for protocol drift. The protocol is markdown + filesystem conventions; drift is the silent killer of advice systems. Doctor surfaces drift loudly so the author can fix it. Implemented as a slash skill (markdown checklist the AI follows), NOT a CLI binary, to preserve workshop's plain-markdown + git bet.
+User-triggered integrity audit of a flightdeck for protocol drift. The protocol is markdown + filesystem conventions; drift is the silent killer of advice systems. Walkaround surfaces drift loudly so the author can fix it. Implemented as a slash skill (markdown checklist the AI follows), NOT a CLI binary, to preserve flightdeck's plain-markdown + git bet.
 
 ## When to invoke
 
