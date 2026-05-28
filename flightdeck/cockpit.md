@@ -1,13 +1,13 @@
 # Cockpit — flightdeck (the flightdeck project itself)
 
-**Last updated**: 2026-05-26 by 月离 (entered dogfood mode — push v0.6/v0.7/v0.8 tags; gather operational signals before v1.0 freeze decision)
-**Active focus**: Dogfood v0.6–v0.8 (≥ 1 week) — cross-session / cross-tool / deliberate violations to surface friction; targets: is board.md the single recovery entry? does wip TTL compress entropy? do scar→playbook gates false-positive?
+**Last updated**: 2026-05-28 by 月离 (shipped v1.0 — flightdeck rebrand + board decomposition)
+**Active focus**: Post-v1.0 dogfood under new names — watch for manifest.md naming friction, cockpit.md ceiling pressure, metaphor lock-in temptations on any new concept added.
 
 ## Next session
 
-1. Day-to-day dogfood: use workshop normally on real projects. Log friction in `wip/` then classify at session-exit per the v0.6+v0.8 discipline gates.
-2. End-of-dogfood-week trigger (~2026-06-02): aggregate signals — read `scars/` and any `/workshop:doctor` reports captured. Note false-positive scar→playbook promotion prompts, stale-wip slip-throughs, AGENTS.md drift.
-3. v1.0 entry decision: enter as-roadmapped, scope-adjust per dogfood findings, or defer further. Re-read v1.0 section of [specs/2026-05-25-v0.6-to-v1.0-roadmap.md](specs/2026-05-25-v0.6-to-v1.0-roadmap.md) with the week's signals in hand.
+1. Dogfood flightdeck on real projects. Log friction in `kneeboard/` then classify at landing per the existing discipline gates.
+2. Re-emit AGENTS.md across active projects using `/flightdeck:emit-agents-md`.
+3. Reassess [v1.1+ deferred folders](landed/specs/2026-05-28-flightdeck-rebrand-design.md#out-of-scope-deferred-to-v11) (briefing/, blackbox/, crew-handover/, experiments/) after 1-2 weeks of real use.
 
 ## Hanging tasks
 
@@ -15,9 +15,9 @@
 
 ## Note on dogfooding
 
-This `workshop/` is the workshop project's own workbench. Scars / playbooks here document **maintaining the workshop tool**, not using it on other projects. All `applies_to:` frontmatter must target workshop-project paths (`skills/`, `hooks/`, `scaffolds/`, etc.) — never `applies_to: general`.
+This `flightdeck/` is the flightdeck project's own workbench. Incident-reports / checklists here document **maintaining the flightdeck tool**, not using it on other projects. All `applies_to:` frontmatter must target flightdeck-project paths (`skills/`, `hooks/`, `scaffolds/`, etc.) — never `applies_to: general`.
 
-Users running workshop in their own projects see their own `workshop/`, not this one.
+Users running flightdeck in their own projects see their own `flightdeck/`, not this one.
 
 ---
 
