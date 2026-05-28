@@ -1,15 +1,15 @@
 {
-  "name": "workshop-marketplace",
-  "description": "Self-hosted marketplace for the workshop plugin (persistent workshop directory protocol for AI coding sessions)",
+  "name": "flightdeck-marketplace",
+  "description": "Self-hosted marketplace for the flightdeck plugin (operational protocol for AI-assisted engineering sessions)",
   "owner": {
     "name": "月离",
     "email": "yuelioi1210@gmail.com"
   },
   "plugins": [
     {
-      "name": "workshop",
-      "description": "Persistent workshop directory protocol for AI coding sessions",
-      "version": "0.8.1",
+      "name": "flightdeck",
+      "description": "Operational protocol for AI-assisted engineering sessions",
+      "version": "1.0.0",
       "source": "./",
       "author": {
         "name": "月离",

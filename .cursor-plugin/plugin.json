@@ -1,21 +1,22 @@
 {
-  "name": "workshop",
-  "displayName": "Workshop",
-  "description": "Persistent workshop directory protocol for AI coding sessions",
-  "version": "0.8.1",
+  "name": "flightdeck",
+  "displayName": "Flightdeck",
+  "description": "Operational protocol for AI-assisted engineering sessions",
+  "version": "1.0.0",
   "author": {
     "name": "月离",
     "email": "yuelioi1210@gmail.com"
   },
-  "homepage": "https://github.com/Yuelioi/workshop",
-  "repository": "https://github.com/Yuelioi/workshop",
+  "homepage": "https://github.com/Yuelioi/flightdeck",
+  "repository": "https://github.com/Yuelioi/flightdeck",
   "license": "MIT",
   "keywords": [
     "skills",
-    "workshop",
+    "flightdeck",
     "session-continuity",
     "ai-collaboration",
-    "memory",
+    "operations",
+    "reliability",
     "context-persistence",
     "workflow"
   ],
