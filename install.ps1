@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Install all workshop skills into your AI tool's skills directory.
+    Install all flightdeck skills into your AI tool's skills directory.
 
 .DESCRIPTION
     Detects installed AI tools and copies every skills/* subdir to the
-    appropriate target. v0.5.0+ installs workshop-workflow + session-enter +
-    session-exit. Optionally scaffolds a workshop/ directory in the current
-    working directory.
+    appropriate target. v1.0.0+ installs flightdeck-workflow + preflight +
+    landing + walkaround + emit-agents-md. Optionally scaffolds a flightdeck/
+    directory in the current working directory.
 
 .PARAMETER Tool
     Which AI tool to install for. Default: auto-detect.
@@ -14,7 +14,7 @@
     Stub (PRs welcome):  codex, cursor, gemini
 
 .PARAMETER Scaffold
-    Scaffold a workshop/ directory in the current working directory.
+    Scaffold a flightdeck/ directory in the current working directory.
     Values: none (default), minimal, full
 
 .PARAMETER Force
@@ -26,7 +26,7 @@
 
 .EXAMPLE
     .\install.ps1 -Tool claude -Scaffold minimal
-    Installs the Claude adapter and scaffolds a minimal workshop/ in cwd.
+    Installs the Claude adapter and scaffolds a minimal flightdeck/ in cwd.
 #>
 
 [CmdletBinding()]
@@ -88,7 +88,7 @@ function Install-Claude {
     if ($installed.Count -gt 0) {
         Write-Host ("Installed skills: " + ($installed -join ', ')) -ForegroundColor Green
         Write-Host "Target dir: $skillsDir"
-        Write-Host "Verify: in a Claude Code session, run /workshop:session-enter or check the skill list."
+        Write-Host "Verify: in a Claude Code session, run /flightdeck:preflight or check the skill list."
     }
 }
 
@@ -104,8 +104,8 @@ function Install-Stub {
 
 function Invoke-Scaffold {
     param([string]$Variant)
-    $source = Join-Path $repoRoot "scaffolds\$Variant\workshop"
-    $target = Join-Path (Get-Location) 'workshop'
+    $source = Join-Path $repoRoot "scaffolds\$Variant\flightdeck"
+    $target = Join-Path (Get-Location) 'flightdeck'
 
     if (-not (Test-Path $source)) {
         Write-Error "Scaffold variant not found: $source"
