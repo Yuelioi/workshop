@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# SessionStart hook for workshop plugin.
-# Conditionally injects workshop-workflow SKILL.md when the current project
-# has a workshop/ directory. No workshop/ → no injection (zero token cost).
+# SessionStart hook for flightdeck plugin.
+# Conditionally injects flightdeck-workflow SKILL.md when the current project
+# has a flightdeck/ directory. No flightdeck/ → no injection (zero token cost).
 
 set -euo pipefail
 
@@ -24,15 +24,15 @@ emit_context() {
     fi
 }
 
-# Conditional load: only inject when this project actually uses workshop.
+# Conditional load: only inject when this project actually uses flightdeck.
 # PWD is the project root at SessionStart for all 3 supported platforms.
-if [ ! -d "${PWD}/workshop" ]; then
+if [ ! -d "${PWD}/flightdeck" ]; then
     emit_context ""
     exit 0
 fi
 
-# Read workshop-workflow skill content
-skill_content=$(cat "${PLUGIN_ROOT}/skills/workshop-workflow/SKILL.md" 2>&1 || echo "Error reading workshop-workflow skill")
+# Read flightdeck-workflow skill content
+skill_content=$(cat "${PLUGIN_ROOT}/skills/flightdeck-workflow/SKILL.md" 2>&1 || echo "Error reading flightdeck-workflow skill")
 
 # Escape string for JSON embedding using bash parameter substitution.
 escape_for_json() {
@@ -47,7 +47,7 @@ escape_for_json() {
 
 skill_escaped=$(escape_for_json "$skill_content")
 
-session_context="<workshop-skill-auto-loaded>\nThis project has a workshop/ directory. The workshop-workflow skill is loaded below — follow it (entry checklist, scenario triggers, exit ritual). For deeper detail use the Skill tool to load companion files (exit-ritual / templates / folder-semantics).\n\n${skill_escaped}\n</workshop-skill-auto-loaded>"
+session_context="<flightdeck-skill-auto-loaded>\nThis project has a flightdeck/ directory. The flightdeck-workflow skill is loaded below — follow it (entry checklist, scenario triggers, landing ritual). For deeper detail use the Skill tool to load companion files (exit-ritual / templates / folder-semantics).\n\n${skill_escaped}\n</flightdeck-skill-auto-loaded>"
 
 emit_context "$session_context"
 exit 0
