@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-05-30
+
+Reliability + clarity hardening of the four entry skills, driven by multi-model review of each skill's instructions. No new capabilities — backward-compatible.
+
+### Changed
+- **preflight** — now reports the first "Next session" item and **stops** (read-only recon); executing it is the next turn, not folded into the entry ritual. Catalog reads tightened: `Glob` real paths (never guess filenames), frontmatter-only reads in one batch (never full-file / duplicate). Trimmed verbosity and the executor-facing `workflow` cross-link.
+- **walkaround** — Audit 8 (AGENTS.md drift) replaces the unexecutable "mentally re-run the recipe" with a concrete field-by-field comparison; Audit 1 adds frontmatter *value* validation (ISO date / list shapes); Audit 3 strips `#fragment`s and verifies files only; the "report once" dedup between Audits 1/9/10 became an explicit skip condition; Audit 6 flags only on high confidence; stray-files no longer false-flag assets/structured-data; absent target folders report ✅ N/A.
+- **landing** — the length check is now non-destructive (move overflow to logbook/manifest, confirm before removing) and fires right after step 3, not after commit; step 5's AGENTS.md trigger corrected (`In flight` lives in `manifest.md`, not cockpit); "no new knowledge is a valid outcome"; blocking hanging tasks pause the ritual; opaque `gate (g)` reference made self-contained.
+- **emit-agents-md** — step 5 replaces the unexecutable "re-run Steps 1-4 / byte-identical" with a real structural self-check (no second write); dropped the `verbatim` vs link-rewrite contradiction; link rewriting explicitly covers `./` / `../`; "no markers" footer omission made intentional; background stats tagged as non-content.
+
+### Added
+- **`checklists/version-bump.md`** — flightdeck now dogfoods its own checklist convention for releases: the five manifests + CHANGELOG that must stay in sync, semver level guidance, and the tag/push step.
+
 ## [1.1.0] — 2026-05-30
 
 ### Added
