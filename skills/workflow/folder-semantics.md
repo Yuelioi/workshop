@@ -17,6 +17,27 @@ Not every project needs every folder. Start with just `cockpit.md`. Add folders 
 
 Premature folder creation is an anti-pattern. Empty directories signal "this should be filled" and create pressure to write low-signal content.
 
+## Routing model
+
+**Flightdeck is graph-routed, not filesystem-routed.** A file is "active" only if it is reachable from some entry — `cockpit.md`, `INDEX.md`, `manifest.md`, or any bundle `README.md`. **A file not reachable from any entry effectively does not exist** (no session will ever read it). This is the single most important property to preserve: a stray, well-written file that nothing links to is invisible, and AI can rarely detect that on its own. `walkaround` audits reachability.
+
+Reachability edges are markdown links from an entry **plus** each bundle README's `reading_order` entries (a leaf listed in its README's `reading_order` is reachable — that list *is* the router, so leaves need not also be linked in prose to count as reached).
+
+Discovery is recursive frontmatter grep (descends into subfolders) + this reachability graph. Custom folders / root files are allowed — flightdeck favors extensible conventions over a locked taxonomy — **but they must be reachable from an entry**, or `walkaround` flags them as orphans.
+
+## Which folder? (decision table)
+
+When unsure where something goes, classify by lifecycle:
+
+| Kind | Lifecycle | Goes in |
+| --- | --- | --- |
+| Uncommitted idea | not started | `sketches/` |
+| A design to implement | one-shot; archived after shipping | `specs/` |
+| Long-lived operational reference / standard / checklist | evergreen | `checklists/` |
+| Imported external material (others' code / RFCs / articles) | reference | `charts/` |
+
+The common mistake is filing an evergreen reference under `specs/`. A spec is a *design you intend to build and then archive*; an evergreen standard you consult repeatedly is a `checklists/` reference. (`checklists/` = authored operational reference; `charts/` = imported external material — keep that split clear instead of adding a `references/` folder.)
+
 ## The 11 folders + 3 entry files
 
 ```
@@ -29,7 +50,7 @@ flightdeck/
 ├── specs/              # Design docs (one design per file)
 ├── flight-plans/       # Implementation plans (one plan per file)
 │
-├── checklists/         # Procedures (commands + checklists + conventions)
+├── checklists/         # Operational reference (checklists, conventions, standards; may be bundles)
 ├── incident-reports/   # Lessons learned (mistakes worth not repeating)
 ├── charts/             # External material (competitor code, RFCs, articles)
 │
@@ -104,19 +125,19 @@ After execution complete → `mv flight-plans/foo.md landed/flight-plans/foo.md`
 
 ### `checklists/` — procedures
 
-Multi-step processes worth running a second time. Format: command sequence + checklist + convention notes.
+Authored **operational reference**: reusable checklists, conventions, and reference standards worth consulting more than once. (Format ranges from a command sequence + checklist to a multi-page standard. For external/imported reference material, use `charts/` instead.)
 
-Naming: `<topic>.md` (no date prefix — checklists are stable resources)
+Naming: `<topic>.md` (no date prefix — checklists are stable resources). A multi-file topic uses a bundle: `checklists/<topic>/` (see [Bundles](#bundles-multi-file-topics)).
 
 Examples: `verify.md` (test before commit), `re-fixture.md` (regenerate test fixtures), `release.md`.
 
 Promotion rule: a process becomes a checklist the **second** time you run it. First time = ad-hoc. Second time = pattern.
 
-**Frontmatter required**: `when_to_read` (one-line trigger) + `applies_to` (short keyword tags) + `last_updated` (YYYY-MM-DD). Same pattern as skill SKILL.md metadata — lets AI grep for relevance + judge staleness without loading the body. A checklist with no `when_to_read` is invisible to skill routing. See [templates.md#checklist](templates.md#playbook).
+**Frontmatter required**: `when_to_read` (one-line trigger) + `applies_to` (short keyword tags) + `last_updated` (YYYY-MM-DD). Optional: `skip_when` (one-line "when NOT to read this" — negative routing to cut "maybe relevant" token waste). Same pattern as skill SKILL.md metadata — lets AI grep for relevance + judge staleness without loading the body. A checklist with no `when_to_read` is invisible to skill routing. See [templates.md#checklist](templates.md#checklist).
 
 ### `incident-reports/` — lessons learned
 
-Mistakes worth not repeating. Format strictly enforces useful root cause (template in [templates.md](templates.md#scar)).
+Mistakes worth not repeating. Format strictly enforces useful root cause (template in [templates.md](templates.md#incident-report)).
 
 Naming: `<topic>.md` (no date prefix — incident reports are reference, not log)
 
@@ -158,7 +179,7 @@ Naming: free-form. Date prefix optional.
 
 This is the most-violated rule. Default to deletion. The cost of deleting a useful note is far smaller than the cost of `kneeboard/` slowly turning into a junk drawer.
 
-**Enforcement (v0.6+)**: kneeboard files require a `last_touched: YYYY-MM-DD` frontmatter field, and stale entries trigger a landing-blocking hard gate. See [templates.md#kneeboard](templates.md#wip) for the full rules.
+**Enforcement (v0.6+)**: kneeboard files require a `last_touched: YYYY-MM-DD` frontmatter field, and stale entries trigger a landing-blocking hard gate. See [templates.md#kneeboard](templates.md#kneeboard) for the full rules.
 
 ### `landed/` — archive umbrella
 
@@ -183,6 +204,44 @@ These are placeholder concepts. Create them only when the project's actual usage
 - `experiments/` — long-running data probes worth referencing across sessions (e.g., "the byte-level study of how AE rejects this header"). Until then, throwaway probes live in `tmp/` at the project root.
 
 If you find yourself wanting one of these, note the need in `cockpit.md` and discuss before creating.
+
+## Bundles (multi-file topics)
+
+When one topic needs several files (a multi-chapter reference, a large checklist), make a **bundle**: a subfolder containing a `README.md` router plus detail files.
+
+```
+checklists/release-process/
+├── README.md        # bundle contract + router (carries frontmatter)
+├── 01-prepare.md    # leaf
+├── 02-build.md      # leaf
+└── 03-publish.md    # leaf
+```
+
+- **The README is the bundle contract**, not just an entry. Frontmatter:
+  ```yaml
+  ---
+  bundle: true
+  when_to_read: <one-line trigger>
+  applies_to: [<short tag>, ...]
+  reading_order: [01-prepare.md, 02-build.md, 03-publish.md]
+  last_updated: YYYY-MM-DD
+  # optional: skip_when, scope, non_goals
+  ---
+  ```
+  The body should state **purpose / scope / non-goals / reading order**, or the bundle decays into "a folder with many `.md` files".
+- **`reading_order` is the routing edge to the leaves**: it is what makes leaves reachable from the README (and therefore from the entry graph). A leaf present in the directory but absent from `reading_order` is an orphan — walkaround flags it.
+- **Leaf** = any file in the bundle other than the README. Rules:
+  - Leaves MUST NOT carry routing frontmatter (`when_to_read` / `applies_to`) — otherwise a recursive grep matches them directly and breaks the single-entry guarantee. The README is the only routing surface.
+  - Leaves **inherit** the README's routing semantics unless explicitly overridden.
+  - Freshness lives on the bundle: the README's `last_updated` is authoritative. Leaf `last_updated` is optional (per-leaf timestamps invite metadata decay).
+  - Leaf-to-leaf links use relative paths (the dangling-reference audit catches breakage on rename/move).
+- **No nested bundles**: one routing boundary per bundle.
+
+Discovery still uses recursive frontmatter grep; the bundle contract leaves room for a future explicit routing index without locking today's convention out.
+
+### Structured data (optional)
+
+A bundle may hold `.csv` / `.json` for bulk lookup data — but ONLY alongside a `README.md` router that says "query on demand, do not read in full". Structured files must never be the primary entry (that would hurt AI readability + git reviewability).
 
 ## Naming convention table
 

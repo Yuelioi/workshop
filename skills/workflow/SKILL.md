@@ -67,7 +67,7 @@ Active flight-plans/specs should be in manifest's `In flight` table — if fallb
 | Designing new feature | `specs/` |
 | Breaking work into tasks | `flight-plans/` |
 
-**How to pick the right incident report / checklist**: don't read every file. Both folders use frontmatter (`when_to_read` + `applies_to` + `last_updated`) — grep the metadata, only load full files whose triggers match the current task. Use `last_updated` to judge staleness.
+**How to pick the right incident report / checklist**: don't read every file. Both folders use frontmatter (`when_to_read` + `applies_to` + `last_updated`) — grep the metadata, only load full files whose triggers match the current task. Use `last_updated` to judge staleness. An optional `skip_when` field (negative routing — "when NOT to read this") lets a file pre-empt a false match; absent is fine.
 
 ### Frontmatter requirements (hard-fail)
 
@@ -178,6 +178,12 @@ Details: [exit-ritual.md](exit-ritual.md).
 11 folders + 3 entry files, all optional except `cockpit.md`. See [folder-semantics.md](folder-semantics.md) for the list and naming conventions.
 
 Minimal: just `flightdeck/cockpit.md`. Add folders as the need appears.
+
+**Which folder?** Classify by lifecycle: uncommitted idea → `sketches/`; a design to build then archive → `specs/`; evergreen operational reference / standard / checklist → `checklists/`; imported external material → `charts/`. The common mistake is filing an evergreen reference under `specs/` — a spec is a design you ship and archive, not a standing reference.
+
+**Routing is graph-based, not filesystem-based.** A file is "active" only if reachable from an entry (`cockpit.md`, `INDEX.md`, `manifest.md`, or a bundle `README.md`). **A file nothing links to effectively does not exist** — no session reads it. Custom folders / root files are allowed but MUST be reachable from an entry, or they are orphans.
+
+**Bundles** — when one topic needs several files, make a subfolder with a `README.md` router carrying `bundle: true` + `reading_order` + routing frontmatter (`when_to_read` / `applies_to` / `last_updated`). Detail leaves carry NO routing fields and inherit the README's; the README's `reading_order` is the routing edge that makes leaves reachable. One routing boundary per bundle (no nesting). Detail in [folder-semantics.md](folder-semantics.md#bundles-multi-file-topics).
 
 ## Templates
 

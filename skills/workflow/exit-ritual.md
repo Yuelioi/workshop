@@ -12,7 +12,7 @@ The protocol for closing an AI coding session cleanly so the next preflight can 
 Session is wrapping up
 ↓
 Step 1: Are there pending hanging tasks?
-        (incomplete critique disposition / wip files older than this session)
+        (incomplete safety-review disposition / kneeboard files older than this session)
 ├─ yes → resolve them first, then continue
 └─ no  → proceed to step 2
 
@@ -67,13 +67,13 @@ Step 3a: Apply lifecycle transitions (semi-implicit — location is source of tr
          Full state machine + review owner discussion: see SKILL.md `Lifecycle of specs and flight-plans`.
 
 Step 4: Commit
-        - Use playbooks/commits.md if it exists
+        - Use checklists/commits.md if it exists
         - Otherwise: terse imperative subject + reasoning in body
 ```
 
-### Step 5 — Check scar→playbook promotion gate (wrap-up)
+### Step 5 — Check incident-report→checklist promotion gate (wrap-up)
 
-For each incident report touched (newly written or updated with `[Case N]` append) this session, evaluate the 3-criterion gate from [SKILL.md § Scar promotion gates](SKILL.md#scar-promotion-gates):
+For each incident report touched (newly written or updated with `[Case N]` append) this session, evaluate the 3-criterion gate from [SKILL.md § Incident report promotion gates](SKILL.md#incident-report-promotion-gates):
 
 1. `[Case N] count ≥ 3`?
 2. Recurred across ≥ 2 distinct sessions?
@@ -131,7 +131,7 @@ Do not write. Gate strictly. Flightdeck is not a session log.
 
 ### (h) Ambiguous → brainstorm
 
-**Trigger phrase**: "this is sort of a scar but also a playbook"
+**Trigger phrase**: "this is sort of an incident report but also a checklist"
 
 If genuinely ambiguous, brainstorm with the user. Use the AI-asks-user template below.
 
@@ -146,8 +146,8 @@ not sure where it belongs. Here's the content:
 > <one-paragraph summary of the knowledge>
 
 Candidates:
-- scars/  if the takeaway is "next time, avoid X because Y"
-- playbooks/  if the takeaway is "the steps to do X are"
+- incident-reports/  if the takeaway is "next time, avoid X because Y"
+- checklists/  if the takeaway is "the steps to do X are"
 - specs/  if the takeaway is "the design decision is X"
 
 My weak preference: <one candidate>, because <one reason>.

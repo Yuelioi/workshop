@@ -1,6 +1,6 @@
 ---
 name: walkaround
-description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / manifest.md / logbook.md / specs / flight-plans / incident-reports / checklists / kneeboard for protocol drift, dangling references, stale entries, and lifecycle mismatches. Triggered by `/flightdeck:walkaround`.
+description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / manifest.md / logbook.md / specs / flight-plans / incident-reports / checklists / kneeboard for protocol drift, dangling references, bundle-contract violations, orphan (unreachable) files, stray files, stale entries, and lifecycle mismatches. Triggered by `/flightdeck:walkaround`.
 disable-model-invocation: true
 ---
 
@@ -17,20 +17,27 @@ User-triggered integrity audit of a flightdeck for protocol drift. The protocol 
 
 ## Severity legend
 
-- **CRITICAL** — protocol contract broken (e.g., scar missing required frontmatter, dangling internal reference). Fix before proceeding with new work.
-- **WARNING** — drift that will accumulate (e.g., stale wip, missing AGENTS.md regeneration, stale Blockers). Fix soon, before the next release.
-- **INFO** — heads-up that may or may not need action (e.g., orphan scar, approaching Recently finished cap). Judge per item.
+- **CRITICAL** — protocol contract broken (e.g., incident report missing required frontmatter, dangling internal reference). Fix before proceeding with new work.
+- **WARNING** — drift that will accumulate (e.g., stale kneeboard, missing AGENTS.md regeneration, stale Blockers). Fix soon, before the next release.
+- **INFO** — heads-up that may or may not need action (e.g., orphan incident report, approaching Recently finished cap). Judge per item.
 
 ## Audits
 
-Run all 8 in order. For each, report findings with the severity tag.
+Run all 10 in order. For each, report findings with the severity tag.
 
-### 1. Incident reports / checklists frontmatter (CRITICAL on miss)
+### 1. Incident reports / checklists frontmatter + bundle contracts (CRITICAL on miss)
 
-For each `flightdeck/incident-reports/*.md` and `flightdeck/checklists/*.md` (NOT in `landed/`):
+For each flat file `flightdeck/incident-reports/*.md` and `flightdeck/checklists/*.md` (NOT in `landed/`):
 - Read the frontmatter (between `---` markers).
 - Confirm `when_to_read`, `applies_to`, `last_updated` are ALL present.
 - If any missing: **CRITICAL** — file is invisible to flightdeck routing per the v0.6 hard-fail rule (see [workflow/SKILL.md § Frontmatter requirements](../workflow/SKILL.md#frontmatter-requirements-hard-fail)).
+
+For each **bundle** (a subfolder under `checklists/` or `incident-reports/`, e.g. `checklists/<topic>/`):
+- It MUST contain `README.md`. Missing: **CRITICAL**.
+- The README frontmatter MUST carry `bundle: true` + `when_to_read` + `applies_to` + `last_updated` + `reading_order`. Missing any: **CRITICAL**.
+- Leaf files (everything other than the README) MUST NOT carry routing fields (`when_to_read` / `applies_to`). An over-reaching leaf breaks the single-entry guarantee: **CRITICAL**.
+- `reading_order` should list the actual leaf files (no missing/extra): mismatch is **WARNING**.
+- A bundle MUST NOT contain a nested sub-bundle: **WARNING**.
 
 ### 2. Stale kneeboard files (WARNING on miss)
 
@@ -85,6 +92,28 @@ If `AGENTS.md` exists at repo root with flightdeck markers (`<!-- BEGIN: flightd
 - Compare. If different in any meaningful field: **WARNING** — emit-agents-md hasn't been re-run since `cockpit.md` changed.
 
 If `AGENTS.md` doesn't exist or has no flightdeck markers: skip (the project hasn't dogfooded the emitter yet; that's optional).
+
+### 9. Orphan / unreachable files (WARNING; INDEX prompt INFO)
+
+Flightdeck is graph-routed: a file unreachable from any entry is invisible.
+- Build the entry set: `cockpit.md`, `INDEX.md`, `manifest.md`, and every bundle `README.md`.
+- Extract their reachability edges to local `.md` targets (transitively through bundle READMEs): both markdown body links **and** each bundle README's `reading_order` entries. A leaf listed in its README's `reading_order` is reachable even if not also linked in prose — `reading_order` is the bundle's router, so do NOT flag such leaves as orphans.
+- Any `.md` under `flightdeck/` (excluding `landed/`, `kneeboard/`, and files that are themselves entries) not reachable from the entry set: **WARNING** — orphan; either link it from an entry or remove it. Custom root files (e.g. a project's own `conventions`-style doc) count as orphans if unlinked. A bundle leaf missing from its README's `reading_order` is an orphan (overlaps Audit 1's `reading_order` mismatch — report once).
+- If ≥2 bundles exist and there is no `INDEX.md`: **INFO** — suggest creating `INDEX.md`; bundle discoverability degrades without it.
+
+### 10. Stray files (WARNING)
+
+Whitelist of what belongs:
+- Entry files: `cockpit.md`, `manifest.md`, `logbook.md`, `INDEX.md`.
+- Known folders: `specs/ flight-plans/ checklists/ incident-reports/ charts/ sketches/ safety-reviews/ kneeboard/ landed/`.
+- Repo-level files (at root, not under `flightdeck/`): `.gitignore`, `README.md`, etc.
+
+Flag:
+- A file inside a routed folder (`checklists/`, `incident-reports/`) that is neither a valid flat resource (Audit 1) nor part of a valid bundle: **WARNING**.
+- A `.md` directly under `flightdeck/` that is not a known entry file and not linked from any entry: **WARNING** (overlaps Audit 9 — report once).
+- A non-`.md`, non-structured-data file in a place no semantics cover: **WARNING**.
+
+**First run note**: on an existing project, Audits 9–10 may list many items at once. Advise gradual cleanup, not a forced all-at-once sweep.
 
 ## Output format
 

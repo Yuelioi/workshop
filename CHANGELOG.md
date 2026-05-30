@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] — 2026-05-30
+
+### Added
+- **Bundles** — a first-class concept for multi-file topics: a subfolder with a `README.md` contract (`bundle: true` + `reading_order` + routing frontmatter) plus detail leaves that inherit the README's routing and carry no routing fields of their own. One routing boundary per bundle (no nesting). See `skills/workflow/folder-semantics.md` and design `flightdeck/landed/specs/2026-05-30-bundles-and-routing-graph-design.md`.
+- **Routing graph model** — folder-semantics now states flightdeck is graph-routed, not filesystem-routed: a file unreachable from any entry (cockpit / INDEX / manifest / bundle README) effectively does not exist. Custom folders/root files are allowed but must be reachable.
+- **Folder-choice decision table** — sketches (idea) vs specs (design to implement) vs checklists (evergreen operational reference) vs charts (imported external material). `checklists/` re-described as authored operational reference; no `references/` folder.
+- **Optional `skip_when` frontmatter** — negative routing ("when NOT to read this") for checklists / incident-reports / bundle READMEs.
+- **Walkaround** — extended Audit 1 for bundle contracts (README required, leaves must not carry routing fields, `reading_order` match), plus new Audit 9 (orphan / unreachable files + INDEX prompt) and Audit 10 (stray files); 10 audits total.
+- **preflight routing catalog** — `/flightdeck:preflight` now reads + parses the frontmatter of `checklists/` / `incident-reports/` flat files and bundle `README.md`s (recursively, excluding `landed/`) and prints a grouped catalog (`[Checklists]` / `[Incident reports]` / `[Bundles]` / `[Malformed bundles]`) with `when_to_read` + `applies_to` + `last_updated`, so routed triggers are in context at entry. Know-what-exists only (not read-all, not a `walkaround` substitute); leaves excluded; unparseable / missing-`when_to_read` / missing-`bundle:true` files surfaced with `⚠` markers rather than dropped. See `flightdeck/landed/specs/2026-05-30-preflight-routing-catalog-design.md`.
+
+### Changed
+- **`reading_order` is now a reachability edge** — folder-semantics, `SKILL.md`, and walkaround Audit 9 all treat a bundle README's `reading_order` entries as routing edges to its leaves. A leaf listed in `reading_order` is reachable even without a prose body link, so well-formed bundles no longer false-positive as orphans; a leaf *missing* from `reading_order` is an orphan. Resolves a contradiction between the bundle contract (leaf list in frontmatter) and the orphan audit (links-only reachability).
+- **Always-loaded `SKILL.md` now carries the core routing semantics** — the folder-choice decision table, graph-routing/reachability rule, bundle contract, and optional `skip_when` field are summarized in `SKILL.md` (previously only in the on-demand `folder-semantics.md`). Ensures models that don't load the companion still obey the conventions, across all platforms (Claude/Codex/Cursor load `skills/workflow/` directly; `GEMINI.md` @-includes both files).
 
 ## [1.0.0] — 2026-05-28
 

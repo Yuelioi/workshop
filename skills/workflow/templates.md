@@ -4,14 +4,14 @@ Reusable file templates for `flightdeck/` files. Each template has a strict stru
 
 ---
 
-## scar
+## incident-report
 
 ```markdown
 ---
 status: active   # active | obsolete | superseded
 since: YYYY-MM-DD
 last_updated: YYYY-MM-DD   # bump on every [Case N] append or status flip
-when_to_read: <one-line trigger — "when AI is about to do X, check this scar first">
+when_to_read: <one-line trigger — "when AI is about to do X, check this incident report first">
 applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 # Optional — Cursor MDC interop (only useful if scoping by file paths matters):
 # globs: "src/parser/**/*.go, src/lexer/**/*.go"   # comma-separated patterns
@@ -44,21 +44,21 @@ I assumed X, but in reality Y.
   - `active` — still applies to the current codebase
   - `obsolete` — the underlying constraint no longer exists (framework upgraded, code removed). Keep the file as history but mark.
   - `superseded` — folded into your project agent rules. Note the upgrade: `status: superseded → project-rules §<section>`. Do not delete.
-- **Promotion path**: scars promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the scar continues to recur). Full gate criteria + workflow in [workflow/SKILL.md § Scar promotion gates](../workflow/SKILL.md#scar-promotion-gates).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A scar without them fails the workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
+- **Promotion path**: incident reports promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the incident continues to recur). Full gate criteria + workflow in [workflow/SKILL.md § Incident report promotion gates](../workflow/SKILL.md#incident-report-promotion-gates).
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). An incident report without them fails the workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
   - `when_to_read: "before designing a recursive parser"` / `applies_to: [parser, recursion, stack-depth]`
   - `when_to_read: "before adding a new migration"` / `applies_to: [migration, schema, postgres]`
   - Keep tags **short and concrete** — `[parser, recursion]` beats `[code-quality, architecture]`. Generic tags don't help AI choose.
 - **Frontmatter `last_updated`**: bump on every meaningful change (Case append / status flip / advice rewrite). Lets AI judge staleness: a `last_updated` 2 years ago about a removed module is probably obsolete — promote to `status: obsolete` or delete. Lets users sort by recency when triaging.
-- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): include these if you want non-Claude AI tools that read `.cursor/rules/*.mdc`-style frontmatter to scope-load the scar by file path. Flightdeck's own routing uses `when_to_read` + `applies_to` — these MDC fields are purely a bridge for tools that don't honor flightdeck's SessionStart hook. Skip if not relevant to your toolchain.
+- **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): include these if you want non-Claude AI tools that read `.cursor/rules/*.mdc`-style frontmatter to scope-load the incident report by file path. Flightdeck's own routing uses `when_to_read` + `applies_to` — these MDC fields are purely a bridge for tools that don't honor flightdeck's SessionStart hook. Skip if not relevant to your toolchain.
 
 ---
 
-## playbook
+## checklist
 
 ```markdown
 ---
-last_updated: YYYY-MM-DD   # bump every time the playbook content actually changes
+last_updated: YYYY-MM-DD   # bump every time the checklist content actually changes
 when_to_read: <one-line trigger — "before doing X, follow these steps">
 applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 # Optional — Cursor MDC interop (only useful if scoping by file paths matters):
@@ -66,11 +66,11 @@ applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 # alwaysApply: false                                  # default false; true loads on every Cursor session
 ---
 
-# <topic> playbook
+# <topic> checklist
 
 ## When to follow this
 
-<2-3 line description of the situation this playbook handles>
+<2-3 line description of the situation this checklist handles>
 
 ## Steps
 
@@ -91,9 +91,9 @@ applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 
 - **One file per topic** (e.g. `verify.md`, `release.md`, `re-fixture.md`).
 - **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the workflow routing check — same hard-fail rule as incident reports. See `workflow/SKILL.md § Frontmatter requirements`.
-- **Frontmatter `last_updated`**: bump every time the playbook content actually changes (not for typo fixes). Lets AI / users judge staleness: a build playbook last touched 2 years ago in a fast-moving project is suspect.
-- **Promotion rule**: a process becomes a playbook **on the second occurrence**. First time is ad-hoc; second time is the pattern worth recording.
-- **No date prefix** — playbooks are stable resources, not log entries.
+- **Frontmatter `last_updated`**: bump every time the checklist content actually changes (not for typo fixes). Lets AI / users judge staleness: a build checklist last touched 2 years ago in a fast-moving project is suspect.
+- **Promotion rule**: a process becomes a checklist **on the second occurrence**. First time is ad-hoc; second time is the pattern worth recording.
+- **No date prefix** — checklists are stable resources, not log entries.
 - **Optional Cursor MDC interop fields** (`globs:` + `alwaysApply:`): same as incident reports — include if you want tools reading `.cursor/rules/*.mdc`-style frontmatter to scope-load the checklist by file path. Flightdeck routing uses `when_to_read` + `applies_to`; the MDC fields are an interop bridge for non-Claude tools.
 
 ---
@@ -106,7 +106,7 @@ applies_to: [<keyword>, <keyword>, ...]   # short tags AI can grep
 One-line gist of the idea.
 
 **Trigger**: Why this came up now / what pain it solves.
-**Related**: Other spec / plan / scar this connects to (optional).
+**Related**: Other spec / plan / incident report this connects to (optional).
 **Revisit when**: The condition under which this is worth re-evaluating (optional).
 ```
 
@@ -117,7 +117,7 @@ One-line gist of the idea.
 
 ---
 
-## wip
+## kneeboard
 
 ```markdown
 ---
@@ -135,7 +135,7 @@ Whatever the session needs that doesn't yet fit a permanent home.>
 - **`last_touched` is REQUIRED.** Update it every time you meaningfully edit the file. `preflight` reads this to flag stale kneeboard files.
 - **Kneeboard file survives one session.** A `last_touched` predating the current session's start means the file is stale. `preflight` surfaces stale kneeboard files; `landing` BLOCKS until each stale kneeboard file is classified, deleted, or has a written defer reason.
 - **No filename convention required.** Use whatever scratch identifier helps (`debug-notes.md`, `gpt-paste`, `temp-spec-draft`). Short.
-- **Defer reason example**: if you genuinely need a wip carried across sessions, add a `defer_reason:` frontmatter field with a 1-line justification (e.g. `defer_reason: investigation paused on user vacation; resume 2026-06-15`). The defer reason makes the carry explicit and surfaceable.
+- **Defer reason example**: if you genuinely need a kneeboard file carried across sessions, add a `defer_reason:` frontmatter field with a 1-line justification (e.g. `defer_reason: investigation paused on user vacation; resume 2026-06-15`). The defer reason makes the carry explicit and surfaceable.
 
 ### Pre-write checklist (hard gate)
 
@@ -149,11 +149,11 @@ Before creating any new `kneeboard/` file, the author (human or AI) must answer:
    - **"delete at landing"** — confirm intent. If this is genuine scratch, fine. The kneeboard file will be classified-or-deleted at landing per the v0.6 TTL hard gate.
    - **Named graduation target** — e.g., `defer_reason: this will graduate to incident-reports/ if a root cause emerges`. The defer reason makes intent visible across sessions.
 
-If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete choice: do **NOT** create the wip file. Either classify the content directly now, or hold the thought without committing it to disk. wip is short-lived scratch; ambiguity defeats that purpose. The checklist is prose discipline, not programmatic enforcement — but it exists so the author can't claim they didn't know.
+If you cannot answer (1) without ambiguity, OR cannot answer (2) with a concrete choice: do **NOT** create the kneeboard file. Either classify the content directly now, or hold the thought without committing it to disk. kneeboard is short-lived scratch; ambiguity defeats that purpose. The checklist is prose discipline, not programmatic enforcement — but it exists so the author can't claim they didn't know.
 
 ---
 
-## critique
+## safety-review
 
 ```markdown
 # <spec or topic> — <reviewer> review
@@ -280,8 +280,8 @@ Last regenerated: YYYY-MM-DD
 ### incident-reports/
 
 <!-- AUTO-START: incident-reports -->
-- [scar-topic-A](incident-reports/topic-a.md) — one-line hook
-- [scar-topic-B](incident-reports/topic-b.md) — one-line hook
+- [incident-topic-A](incident-reports/topic-a.md) — one-line hook
+- [incident-topic-B](incident-reports/topic-b.md) — one-line hook
 <!-- AUTO-END: incident-reports -->
 
 ### checklists/
@@ -329,7 +329,7 @@ Example from a revised backlog spec:
 
 ### Rules
 
-- **Optional.** Small one-shot specs (single-session, no critique round) don't need delta markers. The cost of adding them outweighs the benefit at that scale.
+- **Optional.** Small one-shot specs (single-session, no safety-review round) don't need delta markers. The cost of adding them outweighs the benefit at that scale.
 - **Apply only to substantive changes.** Typo fixes don't earn a marker; an item's scope shifting does.
 - **REMOVED keeps history.** Strike-through preserves the audit trail; outright deletion makes it impossible to see "what we considered and rejected". The audit trail is the whole point.
 - **Markers compose with `state:` frontmatter.** A spec can be `state: blocked` AND have an `ADDED:` line in its body. State applies to the artifact; markers apply to items within.

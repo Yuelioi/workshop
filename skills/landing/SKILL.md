@@ -1,6 +1,6 @@
 ---
 name: landing
-description: Use when explicitly invoking the flightdeck landing ritual — classifies new knowledge from the session, updates cockpit.md, blocks on hanging tasks, optionally commits. Triggered by `/flightdeck:landing`.
+description: Use when explicitly invoking the flightdeck landing ritual — classifies new knowledge from the session, updates cockpit.md, blocks on hanging tasks, runs a lightweight stray/orphan workspace smoke-check, optionally commits. Triggered by `/flightdeck:landing`.
 disable-model-invocation: true
 ---
 
@@ -10,18 +10,23 @@ User-triggered explicit landing ritual. Thin entry-point that runs the [exit-rit
 
 - Wrapping up a session cleanly before context compression.
 - Natural pause point (ship complete / brainstorm done) — closing checks before moving on.
-- Re-running mid-session to enforce the "no junk wip / no hanging critique" discipline.
+- Re-running mid-session to enforce the "no junk kneeboard / no hanging safety-review" discipline.
 
 ## Run this checklist
 
 The full rules + rationale live in [exit-ritual.md](../workflow/exit-ritual.md). Skeleton:
 
-1. **Resolve hanging tasks first** — incomplete critique dispositions and stale `kneeboard/` files block clean exit. See [exit-ritual.md § Hanging tasks](../workflow/exit-ritual.md#hanging-tasks--block-session-exit).
+1. **Resolve hanging tasks first** — incomplete safety-review dispositions and stale `kneeboard/` files block clean exit. See [exit-ritual.md § Hanging tasks](../workflow/exit-ritual.md#hanging-tasks--block-session-exit).
 2. **Classify new knowledge** — apply heuristics (a)–(h), first-match wins. See [exit-ritual.md § Classification heuristics](../workflow/exit-ritual.md#classification-heuristics).
 3. **Update `cockpit.md`** — only bump `Last updated` on the 4 sanctioned triggers. See [exit-ritual.md § Board update](../workflow/exit-ritual.md#board-update--what-changes).
 4. **Apply lifecycle transitions** — for each spec/flight-plan touched, decide state. See [workflow/SKILL.md § Lifecycle of specs and plans](../workflow/SKILL.md#lifecycle-of-specs-and-plans).
 5. **Regenerate `AGENTS.md` if `cockpit.md` changed** — if any of `Last updated`, `Active focus`, `Next session`, `In flight`, or `Hanging tasks` were updated this session, run `/flightdeck:emit-agents-md` so the cross-tool bridge file stays current. See [emit-agents-md SKILL.md](../emit-agents-md/SKILL.md).
-6. **Commit (if user wants)** — ask before; default to `checklists/commits.md` style if it exists; otherwise terse imperative subject + reasoning in body.
+6. **Workspace smoke-check (lightweight, non-blocking)** — before committing, scan for files this session added/left in `flightdeck/` that would drift the workspace. Report, do not block:
+   - **Stray root file**: any `.md` directly under `flightdeck/` that is not an entry file (`cockpit.md` / `manifest.md` / `logbook.md` / `INDEX.md`) → flag "stray root file; classify into a folder or remove".
+   - **Orphan / unreachable**: any non-entry `.md` not reachable from an entry (`cockpit.md` / `INDEX.md` / `manifest.md` / a bundle `README.md` — bundle leaves are reachable via the README's `reading_order`) → flag "orphan; link from an entry or remove". Skip `landed/` and `kneeboard/`.
+   - **Missing frontmatter**: a new flat file in `checklists/` or `incident-reports/` (not a bundle leaf) lacking `when_to_read` / `applies_to` / `last_updated` → flag.
+   This is a smoke-check at write-time, not the full audit. For the complete sweep (bundle contracts, manifest↔folder mismatch, stale Blockers, AGENTS.md drift, etc.) run `/flightdeck:walkaround`. Surface any hit **before** the commit prompt so junk isn't committed; the user decides whether to fix now or proceed.
+7. **Commit (if user wants)** — ask before; default to `checklists/commits.md` style if it exists; otherwise terse imperative subject + reasoning in body.
 
 ## Length check before exit
 
@@ -41,6 +46,7 @@ Cockpit updated:
 Logbook updated:
   - Recently finished: [+1 entry / unchanged]
 Lifecycle transitions: [list / none]
+Workspace smoke-check: clean / [stray: X | orphan: Y | missing-frontmatter: Z]  (run /flightdeck:walkaround for full audit)
 
 Commit now? (Y/n)
 ```
