@@ -24,8 +24,8 @@ Whenever the version number changes — shipping a release, or correcting a vers
    - `gemini-extension.json`
 3. **Add a `CHANGELOG.md` entry** at the top under a new `## [x.y.z] — YYYY-MM-DD` heading, grouped Keep-a-Changelog style (`Added` / `Changed` / `Fixed` / etc.). Link design specs in `flightdeck/landed/specs/` where relevant.
 4. **Commit** — subject `vX.Y.Z: <one-line summary>` (matches existing release commits). Follow `checklists/commits.md` if present.
-5. **Tag** — `git tag vX.Y.Z` (the README version badge reads GitHub releases, which come from tags). The tag must point at the release commit.
-6. **Push** — `git push origin main --follow-tags` so the commit and its tag land together.
+5. **Tag — annotated** — `git tag -a vX.Y.Z -m "vX.Y.Z — <summary>"`. Must be annotated: lightweight tags (`git tag vX.Y.Z`) are silently skipped by `--follow-tags` and never reach origin. The README version badge reads GitHub releases, which come from tags.
+6. **Push** — `git push origin main --follow-tags` (commit + annotated tag together), then confirm with `git ls-remote --tags origin`. If the tag is missing, push it explicitly: `git push origin vX.Y.Z`.
 
 ## Verification
 
@@ -38,4 +38,5 @@ Whenever the version number changes — shipping a release, or correcting a vers
 
 - **Bumping fewer than five files** — the easiest miss; Cursor/Codex/Gemini manifests get forgotten because Claude's is the one you usually open. Always grep all five afterward.
 - **Tag ↔ CHANGELOG drift** — tagging `vX.Y.Z` while the CHANGELOG top still says the previous version, or vice versa.
-- **Forgetting the tag** — a pushed release commit with no tag leaves the version badge stale (this is how `v1.1.0` shipped untagged). `--follow-tags` only pushes annotated/tagged refs you created.
+- **Forgetting the tag** — a pushed release commit with no tag leaves the version badge stale (this is how `v1.1.0` shipped untagged).
+- **Lightweight tag + `--follow-tags`** — `--follow-tags` only pushes *annotated* tags, so a `git tag vX.Y.Z` (no `-a`) is created locally but silently never pushed. Always `git tag -a`, and verify with `git ls-remote --tags origin` after pushing. (Hit on the v1.1.1 release itself.)
