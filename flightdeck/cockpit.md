@@ -1,7 +1,8 @@
 # Cockpit — flightdeck (the flightdeck project itself)
 
-**Last updated**: 2026-06-01 by 月离 (reverted own workbench from abandoned 2.0 to shipped 1.2; finalizing release)
+**Last updated**: 2026-06-01 by 月离 (1.2 shipped on this branch; finalizing release + dogfooding)
 **Active focus**: flightdeck 1.2 — explicit `status` frontmatter + per-folder/root `INDEX.md` (refinement of 1.1.x). Shipped on this branch; finalizing release + dogfooding.
+**Layout**: 1.2
 
 ## Next session
 

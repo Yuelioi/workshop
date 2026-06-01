@@ -261,6 +261,7 @@ I assumed X, but in reality Y.
 
 **Last updated**: YYYY-MM-DD by <who> (<one-line state summary>)
 **Active focus**: <current main thread, 5–15 words>
+**Layout**: 1.2
 
 ## Next session
 
@@ -279,6 +280,7 @@ I assumed X, but in reality Y.
 - **Hanging tasks block landing** — resolve, or explicitly defer with a date.
 - **History does not live in cockpit.** Durable record = `landed/` archive + `git log` (+ `landed/HISTORY.md` when `git: false`). A finished item leaves `Next session`; it is not logged in cockpit.
 - **No metric tracking duplicated elsewhere** — link to the single source.
+- **`Layout` = the flightdeck layout version this deck conforms to.** Entry skills (`preflight`, `walkaround`) compare it against the current version to decide migration. New decks start at the current version; bump it only when migrating to a new layout (see [MIGRATION.md](../../MIGRATION.md)).
 
 ---
 

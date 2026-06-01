@@ -16,15 +16,16 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state 
 
 0. **Read `flightdeck/rules.md`** if present. Apply its toggles for the whole ritual: when `git: false`, skip step 2's git reconcile entirely; honor `disabled_folders` (don't suggest them in fallback).
 
-1. **Detect 1.x layout (non-silent).** If ANY of the following exists, stop and report before reconciling:
-   - `flightdeck/manifest.md`
-   - `flightdeck/logbook.md`
-   - `flightdeck/kneeboard/`
-   - `flightdeck/flight-plans/`
-   - `flightdeck/incident-reports/`
-   - `flightdeck/safety-reviews/`
+1. **Check layout version (non-silent on mismatch).** Read the `**Layout**: <ver>` line in `flightdeck/cockpit.md`'s header. The current layout version is **1.2**.
 
-   Tell the user: "1.x layout detected — migrate to 1.2?" and follow [MIGRATION.md](../../MIGRATION.md). Never migrate silently. Do not proceed with the rest of the checklist until the user decides.
+   - **`Layout` == 1.2** → up to date; continue silently (report nothing for this step).
+   - **`Layout` present but older (e.g. `1.1`)** → tell the user: "Layout `<ver>` detected — migrate to 1.2?" and follow [MIGRATION.md](../../MIGRATION.md). Do not proceed with the rest of the checklist until the user decides.
+   - **No `Layout` line** (decks created before the stamp existed) → fall back to the legacy-marker presence check. If ANY of these exist:
+     - `flightdeck/manifest.md` · `flightdeck/logbook.md` · `flightdeck/kneeboard/` · `flightdeck/flight-plans/` · `flightdeck/incident-reports/` · `flightdeck/safety-reviews/`
+
+     → it is a 1.x deck: tell the user "1.x layout detected — migrate to 1.2?" and follow [MIGRATION.md](../../MIGRATION.md); do not proceed until they decide. If NONE exist → it is a pre-stamp 1.2 deck: offer to add `**Layout**: 1.2` to the cockpit header (ask first), then continue.
+
+   Never migrate (or stamp) silently — always ask the user first.
 
 2. **Read `flightdeck/INDEX.md`** (root INDEX) once, in full — it carries the global status summary (counts per folder). Then **read `flightdeck/cockpit.md`** once, in full — focus on `Last updated`, `Active focus`, and the `## Next session` section. These two reads together are the reconcile baseline; do not re-read either during the ritual.
 

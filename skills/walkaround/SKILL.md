@@ -1,6 +1,6 @@
 ---
 name: walkaround
-description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / rules.md / sketches / specs / plans / incidents / checklists / charts / debriefs for status validity, INDEX↔folder consistency, orphan plans, dangling references, stray files, AGENTS.md drift, and legacy 1.x paths. Triggered by `/flightdeck:walkaround`.
+description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / rules.md / sketches / specs / plans / incidents / checklists / charts / debriefs for status validity, INDEX↔folder consistency, orphan plans, dangling references, stray files, AGENTS.md drift, and layout-version / legacy 1.x paths. Triggered by `/flightdeck:walkaround`.
 disable-model-invocation: true
 ---
 
@@ -119,16 +119,13 @@ If `AGENTS.md` exists at repo root with flightdeck markers (`<!-- BEGIN: flightd
 
 If `AGENTS.md` doesn't exist or has no flightdeck markers: skip (the project hasn't dogfooded the emitter yet; that's optional).
 
-### 10. Legacy 1.x paths (WARNING)
+### 10. Layout version (WARNING / INFO)
 
-If any of the following exist in the repo:
+Read the `**Layout**: <ver>` line in `flightdeck/cockpit.md`'s header. The current layout version is **1.2**.
 
-- `flightdeck/manifest.md`: **WARNING** — legacy 1.x file; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md) (1.1.x → 1.2).
-- `flightdeck/logbook.md`: **WARNING** — legacy 1.x file; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
-- `flightdeck/kneeboard/` directory: **WARNING** — legacy 1.x folder; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
-- `flightdeck/flight-plans/` directory: **WARNING** — legacy 1.x folder; renamed to `plans/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
-- `flightdeck/incident-reports/` directory: **WARNING** — legacy 1.x folder; renamed to `incidents/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
-- `flightdeck/safety-reviews/` directory: **WARNING** — legacy 1.x folder; renamed to `debriefs/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
+- **`Layout` older than 1.2** (e.g. `1.1`) → **WARNING** — deck is on an old layout; point to [MIGRATION.md](../../MIGRATION.md).
+- **No `Layout` line** → fall back to the legacy-marker presence check. If ANY of `flightdeck/manifest.md` · `flightdeck/logbook.md` · `flightdeck/kneeboard/` · `flightdeck/flight-plans/` · `flightdeck/incident-reports/` · `flightdeck/safety-reviews/` exist → **WARNING** — legacy 1.x deck; point to [MIGRATION.md](../../MIGRATION.md). If NONE exist → **INFO** — no `Layout` stamp; suggest adding `**Layout**: 1.2` to the cockpit header.
+- **`Layout` == 1.2** → pass; report nothing.
 
 Only report once per path — do not also flag these as stray/orphan in Audit 8.
 

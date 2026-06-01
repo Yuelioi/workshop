@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Layout version stamp** — cockpit headers carry `**Layout**: <ver>`; `preflight` and `walkaround` compare it against the current layout version instead of always scanning for legacy 1.x filenames. Healthy decks pass silently; unstamped decks fall back to the (now-frozen) legacy-marker check. Never migrates silently.
+
 ## [1.2.0] — 2026-06-01
 
 Refinement of 1.1.x: explicit metadata, derived-index reads, folder renames, and a streamlined cockpit. This is deletion + clarity, not a new model — 1.1.x installs migrate with a straight folder rename and adding `status:` frontmatter. See [MIGRATION.md](MIGRATION.md).
