@@ -1,91 +1,35 @@
-# Migration: workshop → flightdeck (v0.8.1 → v1.0.0)
+# Migration
 
-This document records the v1.0 rebrand for the maintainer's reference. Read this if you cloned a pre-v1.0 workshop directory and need to update it manually, or if you're trying to reconcile old commits / docs against new paths.
+This document records breaking migrations for the maintainer's reference.
 
-## What changed
+## 1.1.x → 1.2
 
-### Top-level
+1.2 keeps the 1.x worldview (sketch / spec / plan / incident / checklist / chart / debrief) and adds two things: **explicit `status` metadata** on every artifact, and a **per-folder + root `INDEX.md`** derived index. `preflight`/`workflow` detect the old layout (any of `manifest.md`, `logbook.md`, `kneeboard/`, `flight-plans/`, `incident-reports/`, `safety-reviews/`) and offer this **interactive, non-silent, idempotent** migration (each step skips if already done; unknown fields preserved):
 
-- Project name: **workshop** → **flightdeck**
-- GitHub repo: `Yuelioi/workshop` → `Yuelioi/flightdeck` (auto-redirect in place)
-- Plugin name and marketplace identifier: workshop → flightdeck
-- VERSION: 0.8.1 → 1.0.0
+1. **`manifest.md`** → fold non-trivial rows into `cockpit.md` (Active focus / Next session / Hanging tasks) or drop; delete `manifest.md`.
+2. **`logbook.md`** → import `Recently finished` into `landed/HISTORY.md` (newest first); move `Deferred` to `sketches/` or `cockpit.Next session`; delete `logbook.md`.
+3. **`kneeboard/`** → classify each file into a folder or delete; remove the empty dir. Session scratch now lives in project-root `tmp/` (gitignored).
+4. **`flight-plans/` → `plans/`**. Each file: add `status:`; optionally add `implements: specs/<x>.md`.
+5. **`incident-reports/` → `incidents/`**. Add `status:` (keep `when_to_read`/`applies_to`/`last_updated`).
+6. **`safety-reviews/` → `debriefs/`**. Add `status:` + `reviewed: specs/<x>.md` + `last_updated` (no `when_to_read`/`applies_to`).
+7. **`specs/` stays.** Add `status:` to each file.
+8. **`checklists/` / `charts/` stay.** Add `status:` (knowledge folders keep their routing fields).
+9. **`sketches/` stays.** Add `status: active` (or `scrapped`).
+10. **Build `INDEX.md`** for every artifact folder + a root `flightdeck/INDEX.md` (the `<!-- AUTO -->` region derived from each file's frontmatter).
+11. **cockpit**: drop any `## In flight` / `## Blockers`; pure focus (Active focus / Next session / Hanging tasks).
+12. **Optional:** create `rules.md` for toggles.
 
-### Directory rename
+### Old → new mapping
 
-- `workshop/` → `flightdeck/`
-
-### Folders inside the working dir
-
-| Old | New |
-| --- | --- |
-| `plans/` | `flight-plans/` |
-| `playbooks/` | `checklists/` |
-| `scars/` | `incident-reports/` |
-| `reference/` | `charts/` |
-| `critiques/` | `safety-reviews/` |
-| `wip/` | `kneeboard/` |
-| `*/finish/` | `landed/*/` (promoted from nested archive to umbrella) |
-| `specs/`, `sketches/` | unchanged |
-
-### Entry-point file decomposition
-
-- `board.md` split into three files (separated by read-time):
-  - `cockpit.md` — Active focus + Next session + Hanging tasks. **80-line ceiling.**
-  - `manifest.md` — In flight + Blockers.
-  - `logbook.md` — Recently finished + Deferred.
-
-### Slash skills
-
-- `/workshop:session-enter` → `/flightdeck:preflight`
-- `/workshop:session-exit` → `/flightdeck:landing`
-- `/workshop:doctor` → `/flightdeck:walkaround`
-- `/workshop:emit-agents-md` → `/flightdeck:emit-agents-md` (unchanged function, namespace updated)
-
-## Migrating a pre-v1.0 workshop directory
-
-For each project that has a `workshop/` directory you want to update:
-
-1. **Rename top-level**: `git mv workshop flightdeck`
-2. **Rename inner folders** per the table above:
-   ```bash
-   cd flightdeck
-   git mv plans flight-plans
-   git mv playbooks checklists      # if it exists
-   git mv scars incident-reports    # if it exists
-   git mv reference charts          # if it exists
-   git mv critiques safety-reviews  # if it exists
-   git mv wip kneeboard             # if it exists
-   ```
-3. **Promote archives to landed/ umbrella**:
-   ```bash
-   mkdir -p landed/flight-plans landed/specs
-   # If you had plans/finish/* :
-   git mv flight-plans/finish/* landed/flight-plans/
-   rmdir flight-plans/finish
-   # If you had specs/finish/* :
-   git mv specs/finish/* landed/specs/
-   rmdir specs/finish
-   ```
-4. **Split `board.md`** into three files. Read your current `flightdeck/board.md` and partition its sections by the read-time mapping:
-   - **cockpit.md**: `Last updated` + `Active focus` + `## Next session` + `## Hanging tasks` (≤ 80 lines)
-   - **manifest.md**: `## In flight` (with status legend) + `## Blockers`
-   - **logbook.md**: `## Recently finished` + `## Deferred`
-   - Delete `board.md` after.
-   - See `flightdeck/landed/specs/2026-05-28-flightdeck-rebrand-design.md § board.md decomposition` for templates.
-5. **Update AGENTS.md / GEMINI.md / CLAUDE.md** at project root: replace `workshop/` paths with `flightdeck/`, replace `board.md` with `cockpit.md`/`manifest.md` per context.
-6. **Re-emit AGENTS.md** with `/flightdeck:emit-agents-md` if you use the auto-generated form. The fenced block markers change from `<!-- BEGIN: workshop -->` to `<!-- BEGIN: flightdeck -->`.
-7. **Reinstall the plugin**: uninstall the workshop plugin, install flightdeck:
-   ```text
-   /plugin uninstall workshop
-   /plugin marketplace add Yuelioi/flightdeck
-   /plugin install flightdeck@flightdeck-marketplace
-   ```
-
-## Why the rename
-
-See [flightdeck/landed/specs/2026-05-28-flightdeck-rebrand-design.md](flightdeck/landed/specs/2026-05-28-flightdeck-rebrand-design.md) for the design rationale.
-
-Short version: `workshop` framed the project as a maker space / sandbox. `flightdeck` frames it as an operational protocol — closer to aviation operations than to a workshop, which is what the project actually does: session lifecycle, checklists, incident tracking, handoffs, controlled autonomy.
-
-The decomposition of `board.md` into cockpit / manifest / logbook is the only conceptual change. Everything else is renaming.
+| 1.1.x | 1.2 |
+|---|---|
+| `manifest.md` | folded into `cockpit.md` (or dropped) |
+| `logbook.md` | `landed/HISTORY.md` (+ `sketches/` for Deferred) |
+| `kneeboard/` | removed; scratch → project-root `tmp/` |
+| `flight-plans/` | `plans/` (+ `status`, + optional `implements`) |
+| `incident-reports/` | `incidents/` (+ `status`) |
+| `safety-reviews/` | `debriefs/` (+ `status`, + `reviewed`) |
+| `specs/` | `specs/` (+ `status`) |
+| `checklists/` / `charts/` / `sketches/` | unchanged paths (+ `status`) |
+| location-implicit state | explicit `status:` field |
+| (no index) | per-folder `INDEX.md` + root `flightdeck/INDEX.md` |

@@ -12,3 +12,6 @@ __pycache__/
 .env.local
 
 flightdeck/charts/
+
+# Session scratch (flightdeck 1.2: ephemeral working notes live here)
+tmp/

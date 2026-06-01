@@ -58,28 +58,38 @@ A `flightdeck/` directory layout your AI reads and writes by convention:
 
 ```
 flightdeck/
-├── INDEX.md            # Quick lookup of subdir purposes + key files
 ├── cockpit.md          # Must-read every session entry (≤ 80 lines)
-├── manifest.md         # On-demand: In flight + Blockers
-├── logbook.md          # Rarely read: Recently finished + Deferred
+├── rules.md            # Optional: project config (toggles + house rules)
+├── INDEX.md            # Global status summary — derived index across all folders
 │
-├── specs/              # Design docs                    (when designing)
-├── flight-plans/       # Implementation plans           (when breaking down work)
+├── sketches/           # Early ideas, scratchpad
+│   └── INDEX.md
+├── specs/              # Scoped design documents
+│   └── INDEX.md
+├── plans/              # Step-by-step implementation plans (implements: a spec)
+│   └── INDEX.md
+├── incidents/          # Lessons learned (no "forgot")
+│   └── INDEX.md
+├── checklists/         # Repeatable procedures
+│   └── INDEX.md
+├── charts/             # External material (RFCs, competitor code)
+│   └── INDEX.md
+├── debriefs/           # External review feedback (raw + disposition)
+│   └── INDEX.md
 │
-├── checklists/         # Repeatable procedures          (commands + checklists)
-├── incident-reports/   # Lessons learned (no "forgot")  (recurring traps)
-├── charts/             # External material              (RFCs, competitor code)
-│
-├── sketches/           # Long-term ideas                (unstarted)
-├── safety-reviews/     # External review feedback       (raw + disposition)
-├── kneeboard/          # Session scratch                (one session only)
-│
-└── landed/             # Archive umbrella
-    ├── flight-plans/   # Shipped plans
-    └── specs/          # Shipped designs
+└── landed/             # Archive of completed files + knowledge docs
+    └── INDEX.md
 ```
 
-**Organized by *when you read what*** — not by topic. The folder / file name tells the AI when to consult it, which means routing is deterministic and the AI does not waste tokens loading irrelevant context.
+**Folder = kind (implicit).** Each folder encodes what the files inside it *are* — no per-file `kind` field needed. **Status is the one explicit frontmatter field** every file carries, plus optional knowledge-routing fields and `implements:` (plans only, pointing to the spec they execute).
+
+Every folder, and the root, contains an `INDEX.md` — a derived index of file names, statuses, and one-line summaries. Read `INDEX.md` to see a folder's complete state without opening each file. The root `INDEX.md` is the global status summary across all folders.
+
+**cockpit.md** is pure focus: Active focus / Next session / Hanging tasks. Hard ceiling 80 lines.
+
+**Lifecycle:** sketch → spec → plan (a plan `implements` a spec); `status` advances explicitly; `landed/` is the archive.
+
+Aligns with superpowers skills: `brainstorming` → spec, `writing-plans` → plan.
 
 ## Architecture
 
@@ -93,13 +103,12 @@ flowchart LR
     subgraph FD [flightdeck/]
         direction TB
         Cockpit[cockpit.md<br/>≤80 lines · must-read]
-        Manifest[manifest.md<br/>on-demand]
-        Logbook[logbook.md<br/>rarely read]
-        Specs[specs/ · flight-plans/]
-        Procedures[checklists/ · incident-reports/]
+        Rules[rules.md<br/>optional config]
+        Index[INDEX.md<br/>global status summary]
+        Folders[sketches/ · specs/ · plans/<br/>incidents/ · checklists/<br/>charts/ · debriefs/]
         Archive[landed/]
-        Cockpit --- Manifest --- Logbook
-        Specs --- Procedures --- Archive
+        Cockpit --- Rules
+        Index --- Folders --- Archive
     end
 
     style Cockpit fill:#dbeafe,stroke:#2563eb
@@ -117,20 +126,20 @@ The single must-read file. Hard ceiling 80 lines. This is your AI's first read o
 # Cockpit — payment-service
 
 **Last updated**: 2026-05-28 by alice (shipped Stripe webhook refactor)
-**Active focus**: stabilize Stripe webhook handler — see failing edge cases in incident-reports/
+**Active focus**: stabilize Stripe webhook handler — see failing edge cases in incidents/
 
 ## Next session
 
-1. Reproduce the duplicate-event bug from incident-reports/stripe-idempotency.md (Case 3).
+1. Reproduce the duplicate-event bug from incidents/stripe-idempotency.md (Case 3).
 2. Decide: idempotency key in DB vs Redis (cost vs latency tradeoff).
-3. Update flight-plans/2026-05-26-stripe-hardening.md Phase 2 with the decision.
+3. Update plans/2026-05-26-stripe-hardening.md Phase 2 with the decision.
 
 ## Hanging tasks
 
 - (none)
 ```
 
-That's the whole entry experience. No 500-line context dump. No paragraph of project background the AI has to skim every time. **80 lines, by hard rule.** Anything historical or contextual is one file deeper — `manifest.md` / `logbook.md` / `specs/` — read on demand.
+That's the whole entry experience. No 500-line context dump. No paragraph of project background the AI has to skim every time. **80 lines, by hard rule.** Anything historical or contextual is one file deeper — read from `INDEX.md` first, then open the relevant file on demand.
 
 ## Why it exists
 
@@ -141,16 +150,17 @@ Most "AI memory" systems fail by **saving everything**. The signal drowns. You g
 | Discipline | What it enforces |
 | --- | --- |
 | **Strict write gate** | Only content that changes future behavior, influences decisions, or gets referenced repeatedly. Session logs, debug dumps, "let me just save this for later" — refused. |
-| **Lifecycle per folder** | `kneeboard/` lives one session. Incident reports upgrade to project rules on third recurrence. Specs/flight-plans archive into `landed/` after ship. |
+| **Folder = kind** | The folder a file lives in declares what it is. `status` is the one explicit frontmatter field; it advances through the lifecycle as work progresses. |
 | **Authority order** | When sources disagree, the protocol declares who wins. No "AI gets confused" moments. |
+| **INDEX-first reads** | Each folder's `INDEX.md` is a derived summary — file names, statuses, one-liners. The AI reads `INDEX.md` before opening individual files, saving tokens on large projects. |
 | **Landing ritual** | 90% of session-end classifications are obvious. Only true ambiguity triggers brainstorming. |
-| **Read-time decomposition** | cockpit / manifest / logbook separate what you read every session from what you open on demand from what you almost never re-read. |
+| **Read-time decomposition** | `cockpit.md` is the sole must-read entry; everything else is opened on demand via deterministic folder routing. |
 
 ## Design philosophy
 
 > ✨ **Semantic clarity outranks thematic consistency.**
 
-The flightdeck aviation metaphor is used where it sharpens operational intent — *not* as a theme to apply uniformly. Two folders (`specs/`, `sketches/`) intentionally keep neutral names because no aviation equivalent improves them. New concepts face the same test: if a word fits the metaphor but reads confusingly, reject it.
+The flightdeck aviation metaphor is used where it sharpens operational intent — *not* as a theme to apply uniformly. Folder names are chosen for clarity first. New concepts face the same test: if a word fits the metaphor but reads confusingly, reject it.
 
 ## Install
 
@@ -221,7 +231,7 @@ cd flightdeck
 
 ```powershell
 .\install.ps1 -Scaffold minimal     # just cockpit.md
-.\install.ps1 -Scaffold full        # all 11 subdirs + 3 entry files
+.\install.ps1 -Scaffold full        # all subdirs + cockpit.md + optional rules.md
 ```
 
 ```bash
@@ -257,7 +267,7 @@ flightdeck detects the missing directory, asks you to confirm, runs a two-questi
 | `/flightdeck:workflow` | ✅ via SessionStart hook when `flightdeck/` exists | The main protocol. Also bootstraps the directory if missing. |
 | `/flightdeck:preflight` | — explicit only | Re-anchor a drifted long session against `cockpit.md` + git state. |
 | `/flightdeck:landing` | — explicit only | Clean session wrap — classify new knowledge, update cockpit, optionally commit. |
-| `/flightdeck:walkaround` | — explicit only | Integrity audit across 8 categories — protocol drift detection. |
+| `/flightdeck:walkaround` | — explicit only | Integrity audit across 10 categories — protocol drift detection. |
 | `/flightdeck:emit-agents-md` | — explicit only | Regenerate `AGENTS.md` between fenced markers from `cockpit.md`. |
 
 All commands except `workflow` carry `disable-model-invocation: true` — they fire only on explicit slash, never auto-triggered from conversation context.
@@ -269,19 +279,19 @@ The skill watches the conversation and consults the right folder automatically:
 | What you say / what's happening | Skill routes AI to |
 | --- | --- |
 | *"What were we doing?"* / session start | `cockpit.md` |
-| *"Why did the migration break?"* | `incident-reports/` (then debug) |
+| *"Why did the migration break?"* | `incidents/` (then debug) |
 | *"How do I run the tests?"* | `checklists/` |
-| *"Let's design a new X"* | `specs/` |
-| *"Break this into tasks"* | `flight-plans/` |
-| *"Here's review feedback from another AI"* | `safety-reviews/` (must add disposition) |
+| *"Let's design a new X"* | `specs/` (new scoped design doc) |
+| *"Break this into tasks"* | `plans/` (implements the spec) |
+| *"Here's review feedback from another AI"* | `debriefs/` (must add disposition) |
 | *"Save this for later"* | `sketches/` (or refused by write gate if low-signal) |
 
 ### Session end
 
 Say *"let's wrap up"* or similar. The AI runs the [landing ritual](skills/workflow/exit-ritual.md):
 
-1. Apply classification heuristics to new knowledge (bug → `incident-reports/`, procedure → `checklists/`, one-off → discard).
-2. Update `cockpit.md` (`Last updated`, `Next session`); update `manifest.md` / `logbook.md` if state diverged.
+1. Apply classification heuristics to new knowledge (bug → `incidents/`, procedure → `checklists/`, one-off → discard).
+2. Update `cockpit.md` (`Last updated`, `Next session`, `## Hanging tasks` if changed).
 3. Commit.
 
 The next session — even a different AI, even a different developer — picks up exactly where this one stopped.
@@ -305,11 +315,12 @@ There are several adjacent approaches to giving an AI continuity. flightdeck sit
 | --- | --- | --- | --- | --- | --- | --- |
 | **Static project rules** | via emit | ✅ native | — | — | ✅ | — |
 | **Session-to-session continuity** | ✅ | — | ✅ | — | — | ✅ |
-| **Lifecycle state machine** (spec → plan → landed) | ✅ | — | — | ✅ | — | — |
+| **Lifecycle model** (folder=kind · status · landed) | ✅ | — | — | ✅ | — | — |
 | **Strict write gate** (anti junk-drawer) | ✅ | — | — | — | — | — |
 | **Incident / lesson tracking** with root-cause discipline | ✅ | — | — | — | — | — |
 | **External review disposition** tracking | ✅ | — | — | — | — | — |
-| **Read-time decomposition** (cockpit/manifest/logbook split) | ✅ | — | — | — | — | — |
+| **Read-time decomposition** (cockpit-first; on-demand folder routing) | ✅ | — | — | — | — | — |
+| **INDEX-first token saving** (per-folder derived index) | ✅ | — | — | — | — | — |
 | **Tool-agnostic** (markdown + filesystem) | ✅ | ✅ | partial | ✅ | Cursor-only | — |
 | **Skill self-loading** trigger | ✅ | — | ✅ | — | ✅ | — |
 | **Cross-tool reach** | via AGENTS.md emit | native | — | — | — | — |
@@ -318,8 +329,8 @@ There are several adjacent approaches to giving an AI continuity. flightdeck sit
 - **AGENTS.md** is the wire format for static rules. flightdeck **emits into** AGENTS.md, doesn't compete with it.
 - **Cline Memory Bank** gives raw memory persistence; flightdeck gives memory + lifecycle + write discipline.
 - **OpenSpec** is the closest sibling for spec evolution markers; flightdeck adopts its `ADDED:` / `MODIFIED:` / `REMOVED:` convention.
-- **Cursor MDC** is a path-based scope tag; flightdeck includes MDC frontmatter on incident-reports / checklists for Cursor interop.
-- **Letta Code** has a skill-library promotion pattern; flightdeck adopts the gate-based incident-report → checklist promotion.
+- **Cursor MDC** is a path-based scope tag; flightdeck includes MDC frontmatter on incidents / checklists for Cursor interop.
+- **Letta Code** has a skill-library promotion pattern; flightdeck adopts the gate-based incident → checklist promotion.
 
 flightdeck is **opinionated**: write gate before storage, lifecycle before memory, peer reviews before merge. If that fits, it fits well.
 
@@ -337,7 +348,7 @@ Yes — that's the whole point. The protocol is `skills/workflow/SKILL.md`, whic
 
 The aviation framing reflects what the protocol actually does: session lifecycle, checklists under uncertainty, incident tracking, handoffs between operators, controlled autonomy with periodic re-anchoring. Those are aviation concepts — not metaphor, structure.
 
-The framing has a guardrail: **"Semantic clarity outranks thematic consistency."** Two folders (`specs/`, `sketches/`) keep neutral names because no aviation word improves them. The metaphor is a tool, not a theme.
+The framing has a guardrail: **"Semantic clarity outranks thematic consistency."** Folder names are chosen for clarity first. The metaphor is a tool, not a theme.
 
 </details>
 
@@ -346,7 +357,7 @@ The framing has a guardrail: **"Semantic clarity outranks thematic consistency."
 
 Yes. The ceiling is **cognitive-load engineering**, not style. cockpit.md is read every session by both human and AI. At 80 lines it fits on one screen and consumes < 1k tokens. Without the ceiling, board-style files grow to 300-500 lines, the AI burns context just orienting, and humans stop reading them.
 
-Hitting the ceiling forces a real decision: does this content earn its place in the entry-point, or does it belong in `manifest.md` (open work) / `logbook.md` (history) / out entirely?
+Hitting the ceiling forces a real decision: does this content earn its place in the entry-point, or does it belong in a deeper folder (`specs/`, `incidents/`) or `## Hanging tasks`, or out entirely?
 
 </details>
 
@@ -361,7 +372,7 @@ flightdeck sits **on top of** AGENTS.md, not in place of it:
 | --- | --- | --- |
 | Static project rules / style guide | ✅ | (use AGENTS.md) |
 | Session-to-session continuity (cockpit, hand-off) | — | ✅ |
-| Lifecycle state machine (spec → plan → landed) | — | ✅ |
+| Lifecycle model (folder=kind · status · landed) | — | ✅ |
 | Write gate against junk-drawer accumulation | — | ✅ |
 | Incident-report log (what went wrong, root causes) | — | ✅ |
 | Cross-tool reach | native | via `/flightdeck:emit-agents-md` |
@@ -384,10 +395,10 @@ In the meantime, the [`/flightdeck:emit-agents-md`](skills/emit-agents-md/SKILL.
 
 A static rules file (CLAUDE.md, project notes) is **append-only knowledge**. flightdeck is a **state machine with lifecycle gates**:
 
-- New mistake → `incident-reports/` with mandatory root-cause analysis (forbidden phrases: "forgot", "careless").
+- New mistake → `incidents/` with mandatory root-cause analysis (forbidden phrases: "forgot", "careless").
 - Mistake recurs 3 times → promotion gate fires, you decide whether to elevate to `checklists/`.
 - Checklist gets ignored anyway → promotion to project agent rules.
-- Spec ships → moves to `landed/` and loses authority to current state.
+- Work ships → `status` advances to `done`, file moves to `landed/`, no longer authoritative for current state.
 
 The lifecycle is what prevents the "junk drawer" failure mode that static rules files always succumb to over time.
 
@@ -396,7 +407,7 @@ The lifecycle is what prevents the "junk drawer" failure mode that static rules 
 <details>
 <summary><b>Why not use vector embeddings / RAG over my code?</b></summary>
 
-flightdeck is solving a different problem. Vector retrieval gives you *similar* content; flightdeck gives you *operationally relevant* content with explicit routing. You don't want similarity-based retrieval to surface a stale incident report alongside three irrelevant ones — you want the active `cockpit.md` and nothing else until you ask.
+flightdeck is solving a different problem. Vector retrieval gives you *similar* content; flightdeck gives you *operationally relevant* content with explicit routing. You don't want similarity-based retrieval to surface a stale incident file alongside three irrelevant ones — you want the active `cockpit.md` and nothing else until you ask.
 
 flightdeck is also durable in ways embeddings aren't: it's plain text that survives a model upgrade, a vendor change, a switch between AI tools, or a code review where a human edits the files directly.
 
@@ -408,11 +419,11 @@ flightdeck is also durable in ways embeddings aren't: it's plain text that survi
 | --- | --- |
 | [skills/workflow/SKILL.md](skills/workflow/SKILL.md) | The entry-point your AI loads — protocol, authority order, lifecycle, design philosophy |
 | [skills/workflow/folder-semantics.md](skills/workflow/folder-semantics.md) | What each folder holds and why; minimal-vs-full setup; future expansion slots |
-| [skills/workflow/templates.md](skills/workflow/templates.md) | incident-report / checklist / sketch / safety-review / cockpit templates with frontmatter rules |
+| [skills/workflow/templates.md](skills/workflow/templates.md) | incident / checklist / sketch / debrief / cockpit templates with frontmatter rules |
 | [skills/workflow/exit-ritual.md](skills/workflow/exit-ritual.md) | The landing ritual — classification heuristics, red flags, promotion gates |
 | [skills/preflight/SKILL.md](skills/preflight/SKILL.md) | `/flightdeck:preflight` — explicit entry ritual |
 | [skills/landing/SKILL.md](skills/landing/SKILL.md) | `/flightdeck:landing` — explicit landing ritual |
-| [skills/walkaround/SKILL.md](skills/walkaround/SKILL.md) | `/flightdeck:walkaround` — 8-category integrity audit |
+| [skills/walkaround/SKILL.md](skills/walkaround/SKILL.md) | `/flightdeck:walkaround` — 10-category integrity audit |
 | [skills/emit-agents-md/SKILL.md](skills/emit-agents-md/SKILL.md) | `/flightdeck:emit-agents-md` — AGENTS.md regeneration |
 | [TEST_PLAN.md](TEST_PLAN.md) | RED-GREEN-REFACTOR cycle status |
 | [MIGRATION.md](MIGRATION.md) | workshop → flightdeck upgrade notes |
@@ -426,7 +437,7 @@ Codex / Cursor / Gemini manifests are in place but **behaviorally untested**. Th
 
 1. Install flightdeck on one of those tools.
 2. Run a short session in a project with `flightdeck/`.
-3. Verify the AI honors entry / triggers / landing per the [release-gate scenarios](flightdeck/specs/2026-05-23-v1.0-release-gate.md).
+3. Verify the AI honors entry / triggers / landing per the [release-gate scenarios](flightdeck/landed/specs/2026-05-23-v1.0-release-gate.md).
 4. Open a PR with the transcript and flip the matrix from ⚠️ to ✅. Template: [.github/PULL_REQUEST_TEMPLATE/manifest-verification.md](.github/PULL_REQUEST_TEMPLATE/manifest-verification.md).
 
 ### Skill improvements
@@ -437,14 +448,14 @@ The most valuable issue you can open: **a transcript of an AI that wriggled out 
 
 ## Roadmap
 
-See [TEST_PLAN.md](TEST_PLAN.md) for v1.0 ship status. Beyond v1.0:
+See [TEST_PLAN.md](TEST_PLAN.md) for v1.x ship status. Beyond v1.2:
 
 | | Goal |
 | --- | --- |
-| **v1.1+** | Optional folders — `briefing/` (domain context), `blackbox/` (raw session log), `crew-handover/` (cross-AI handoff), `experiments/` (long-running probes). Deferred from v1.0 to keep rebrand scope contained; revisit when real usage demands each. |
+| **v1.3+** | Optional folders — `briefing/` (domain context), `blackbox/` (raw session log), `crew-handover/` (cross-AI handoff), `experiments/` (long-running probes). Deferred to keep current scope contained; revisit when real usage demands each. |
 | **Continuance benchmark** | A "pick up the thread" test suite for any AI agent. Hand it a mid-project flightdeck/, say "continue", measure recovery quality. |
-| **Synthesis / compression** | Tools for compressing many archived specs into themed retrospectives without losing decision history. |
-| **Live INDEX automation** | Optional hook to keep `INDEX.md` AUTO-sections in sync without manual intervention. |
+| **Synthesis / compression** | Tools for compressing many archived files into themed retrospectives without losing decision history. |
+| **Live INDEX automation** | Optional hook to keep each folder's `INDEX.md` in sync without manual intervention. |
 | **End-to-end verification** of Codex / Cursor / Gemini (PRs welcome — manifests already in place). |
 | **MCP server** exposing `flightdeck/` to MCP-aware clients. |
 
@@ -454,8 +465,8 @@ flightdeck stands on the shoulders of:
 
 - **[AGENTS.md](https://agents.md)** — the Linux Foundation cross-tool standard for AI project instructions. flightdeck emits into AGENTS.md and treats it as the wire format.
 - **[OpenSpec](https://github.com/openspec/openspec)** — the spec-evolution markers (`ADDED:` / `MODIFIED:` / `REMOVED:`) come straight from OpenSpec convention.
-- **[Cursor MDC](https://docs.cursor.com)** — the path-scoped frontmatter (`globs:` / `alwaysApply:`) on incident-reports / checklists for Cursor compatibility.
-- **[Letta Code](https://github.com/letta-ai/letta)** — the skill-library promotion pattern inspired the multi-criterion incident-report → checklist gate.
+- **[Cursor MDC](https://docs.cursor.com)** — the path-scoped frontmatter (`globs:` / `alwaysApply:`) on incidents / checklists for Cursor compatibility.
+- **[Letta Code](https://github.com/letta-ai/letta)** — the skill-library promotion pattern inspired the multi-criterion incident → checklist gate.
 - **[superpowers](https://github.com/anthropic-experimental/superpowers)** — the directed-graph protocol style and `brainstorming` / `writing-plans` skill conventions.
 - **[Cline Memory Bank](https://docs.cline.bot/improving-your-prompting-skills/custom-instructions-library/cline-memory-bank)** — the original "AI persistent memory" pattern that motivated flightdeck's stricter write gate.
 - **[Roo Boomerang](https://github.com/RooCodeInc)** — the subagent context-survival pattern noted for v1.x adoption.

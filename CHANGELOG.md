@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-06-01
+
+Refinement of 1.1.x: explicit metadata, derived-index reads, folder renames, and a streamlined cockpit. This is deletion + clarity, not a new model — 1.1.x installs migrate with a straight folder rename and adding `status:` frontmatter. See [MIGRATION.md](MIGRATION.md).
+
+### Added
+- **Explicit `status:` frontmatter** (required on every artifact) — replaces location-implicit state. Each file now declares its own lifecycle state directly; folder location is no longer the source of truth.
+- **Per-folder `INDEX.md`** + root **`flightdeck/INDEX.md`** derived index (file / status / one-line summary). Entry skills read INDEX first to orient without loading every artifact — saves tokens and speeds up preflight.
+- **`plans/`** folder with optional **`implements:`** frontmatter pointing to the spec a plan executes.
+- **`sketches/`** and **`specs/`** retained and clarified in the folder-choice decision table.
+- **`debriefs/`** folder (replaces `safety-reviews/`) for post-incident retrospectives.
+
+### Changed
+- **Folder renames** (breaking for existing installs, one-line fix): `incident-reports/` → `incidents/`, `safety-reviews/` → `debriefs/`, `flight-plans/` → `plans/`. Canonical folder set is now `sketches/ specs/ plans/ incidents/ checklists/ charts/ debriefs/` + `landed/`.
+- **Cockpit is pure focus** — `## Active focus` / `## Next session` / `## Hanging tasks` only. The artifact-list section is gone; artifact state is now tracked via `status:` frontmatter and INDEX, not a cockpit list.
+- **`README` → `INDEX` naming** within conventions and scaffolds. Folder = kind (implicit) + explicit `status:` replaces the old README-as-index idea.
+- **Conventions doc** and scaffold templates updated throughout for the new folder names and `status:` field.
+
+### Removed
+- `manifest.md` and `logbook.md` — replaced by INDEX reads and `git log`; session scratch lives in project-root `tmp/`.
+- `kneeboard/` folder — removed; no replacement needed.
+
 ## [1.1.1] — 2026-05-30
 
 Reliability + clarity hardening of the four entry skills, driven by multi-model review of each skill's instructions. No new capabilities — backward-compatible.
