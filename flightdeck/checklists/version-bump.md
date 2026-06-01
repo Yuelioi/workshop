@@ -1,4 +1,5 @@
 ---
+status: active
 last_updated: 2026-05-30
 when_to_read: before cutting a new flightdeck release / bumping the version number
 applies_to: [release, version, changelog, semver, publish]
@@ -22,7 +23,7 @@ Whenever the version number changes — shipping a release, or correcting a vers
    - `.codex-plugin/plugin.json`
    - `.cursor-plugin/plugin.json`
    - `gemini-extension.json`
-3. **Add a `CHANGELOG.md` entry** at the top under a new `## [x.y.z] — YYYY-MM-DD` heading, grouped Keep-a-Changelog style (`Added` / `Changed` / `Fixed` / etc.). Link design specs in `flightdeck/landed/specs/` where relevant.
+3. **Add a `CHANGELOG.md` entry** at the top under a new `## [x.y.z] — YYYY-MM-DD` heading, grouped Keep-a-Changelog style (`Added` / `Changed` / `Fixed` / etc.). Link landed specs/plans in `flightdeck/landed/` where relevant.
 4. **Commit** — subject `vX.Y.Z: <one-line summary>` (matches existing release commits). Follow `checklists/commits.md` if present.
 5. **Tag — annotated** — `git tag -a vX.Y.Z -m "vX.Y.Z — <summary>"`. Must be annotated: lightweight tags (`git tag vX.Y.Z`) are silently skipped by `--follow-tags` and never reach origin. The README version badge reads GitHub releases, which come from tags.
 6. **Push** — `git push origin main --follow-tags` (commit + annotated tag together), then confirm with `git ls-remote --tags origin`. If the tag is missing, push it explicitly: `git push origin vX.Y.Z`.
