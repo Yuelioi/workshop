@@ -1,15 +1,14 @@
 # Cockpit — flightdeck (the flightdeck project itself)
 
-**Last updated**: 2026-06-01 by 月离 (1.2 shipped on this branch; finalizing release + dogfooding)
-**Active focus**: flightdeck 1.2 — explicit `status` frontmatter + per-folder/root `INDEX.md` (refinement of 1.1.x). Shipped on this branch; finalizing release + dogfooding.
+**Last updated**: 2026-06-02 by 月离 (v1.3.0 shipped + landed — layout-version migration detection)
+**Active focus**: flightdeck 1.3 shipped — layout-version-driven migration detection (layout schema stays 1.2). Dogfooding on real projects + cross-tool manifest verification.
 **Layout**: 1.2
 
 ## Next session
 
-1. Finalize the 1.2 release per [checklists/version-bump.md](checklists/version-bump.md).
-2. Dogfood 1.2 on real projects — log friction, classify at landing.
-3. Behaviorally verify Codex / Cursor / Gemini manifests against the archived release-gate scenarios (see [checklists/version-bump.md](checklists/version-bump.md) verification section for smoke-check reference).
-4. Reassess deferred folders — see [sketches/v1x-deferred-ideas.md](sketches/v1x-deferred-ideas.md).
+1. Dogfood 1.2/1.3 on real projects — log friction, classify at landing.
+2. Behaviorally verify Codex / Cursor / Gemini manifests against the archived release-gate scenarios (see [checklists/version-bump.md](checklists/version-bump.md) verification section for smoke-check reference).
+3. Reassess deferred folders — see [sketches/v1x-deferred-ideas.md](sketches/v1x-deferred-ideas.md).
 
 ## Hanging tasks
 

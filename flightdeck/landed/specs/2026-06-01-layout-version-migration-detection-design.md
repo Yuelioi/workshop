@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 ---
 
 # 布局版本号驱动的迁移检测

@@ -1,6 +1,6 @@
 ---
-status: active
-implements: specs/2026-06-01-layout-version-migration-detection-design.md
+status: done
+implements: landed/specs/2026-06-01-layout-version-migration-detection-design.md
 ---
 
 # Layout 版本号驱动迁移检测 Implementation Plan
