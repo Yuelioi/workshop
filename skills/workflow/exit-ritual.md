@@ -12,86 +12,112 @@ The protocol for closing an AI coding session cleanly so the next preflight can 
 Session is wrapping up
 ↓
 Step 1: Are there pending hanging tasks?
-        (incomplete safety-review disposition / kneeboard files older than this session)
+        (incomplete debrief disposition)
 ├─ yes → resolve them first, then continue
 └─ no  → proceed to step 2
 
 Step 2: Did this session produce new knowledge / discover a bug / agree on a decision?
-├─ no  → only update cockpit.md if Active focus shifted, then commit
+├─ no  → only update cockpit.md if Active focus shifted, then proceed to Step 4
 └─ yes → for each piece of new knowledge:
 
          Apply classification heuristics in order, first match wins:
 
-         (a) Bug + root cause → incident-reports/
+         (a) Bug + root cause → incidents/
              (use incident-report template; check if existing topic — append [Case N])
+             Set status: active in frontmatter.
 
          (b) "Every time we do X, follow these steps" → checklists/
              (promote only on the second occurrence, not the first)
+             Set status: active in frontmatter.
 
          (c) Design decision worth referencing later → specs/
+             Set status: pending in frontmatter.
              (if substantial, brainstorm with user first)
 
-         (d) Multi-step task to execute later → flight-plans/
+         (d) Multi-step task to execute later → plans/
+             Set status: pending in frontmatter.
+             Optionally add implements: specs/<x>.md if it executes a spec.
 
-         (e) External feedback received → safety-reviews/
+         (e) External feedback / review received → debriefs/
              (must include disposition section before landing)
+             Set status: active in frontmatter.
 
-         (f) Long-term idea worth remembering → sketches/
+         (f) Imported external material (RFCs, articles, competitor code) → charts/
+             Set status: active in frontmatter.
 
-         (g) One-off log analysis, debug output, conversation byproduct
+         (g) Long-term idea worth remembering → sketches/
+             Set status: active in frontmatter.
+             Mark "Revisit when" condition if you can.
+
+         (h) One-off log analysis, debug output, conversation byproduct
              → DO NOT WRITE (gating)
 
-         (h) Spans multiple folders, no clear primary
+         (i) Spans multiple folders, no clear primary
              → brainstorm with user
 
-Step 3: Update cockpit.md
-        - Refresh Last updated (date + author + one-line state)
-        - Refresh Active focus if main thread shifted
-        - Refresh Next session: 1-5 concrete items
-        - **Update manifest.md In flight row states** (see lifecycle table below)
-        - Clear or carry over hanging tasks
+Step 3: Regenerate INDEX for changed folders
+        At session end, regenerate the <!-- AUTO --> region of INDEX.md
+        only for folders where a file was added, modified, moved, landed,
+        or had its status changed this session. Other folders' INDEX untouched.
 
-Step 3a: Apply lifecycle transitions (semi-implicit — location is source of truth, frontmatter overrides for special states)
+        If any folder's counts changed, also refresh the root flightdeck/INDEX.md
+        <!-- AUTO --> region.
 
-         | Event during session              | Action                                                                                          |
-         | --------------------------------- | ----------------------------------------------------------------------------------------------- |
-         | New spec written                  | Drop in `specs/`. No manifest row (implicit ⚪).                                               |
-         | New flight-plan written           | Drop in `flight-plans/`. No manifest row (implicit 🟡).                                        |
-         | Impl done, review pending         | Add `state: awaiting-review` to flight-plan frontmatter + add 🔵 row in manifest `In flight` with review owner; if owner = user, add Hanging task. |
-         | Review passed                     | Remove `state:` frontmatter; move spec + flight-plan to `landed/`; delete the 🔵 row; add 1 entry to logbook `Recently finished` (≤ 3 lines). |
-         | Blocked                           | Add `state: blocked` frontmatter + 🔴 row in manifest `In flight` with reason.                 |
-         | Scrapped                          | Add `state: scrapped` frontmatter (or delete file); delete row; optional 1-line note in logbook `Recently finished`. |
+        Walkaround does the full INDEX↔frontmatter consistency check across all folders.
 
-         Manifest's `In flight` shows ONLY rows where state diverges from location. A 20-task project with 18 flight-plans in `flight-plans/` does not need 18 rows — they're all implicit 🟡.
+Step 3a: Suggest status for affected artifacts
+         For each artifact written or touched this session, the AI MAY suggest
+         the next typical status per the recommended flow:
+           pending → active → awaiting-review → done
+           active ↔ blocked
+           any active state → scrapped
 
-         Full state machine + review owner discussion: see SKILL.md `Lifecycle of specs and flight-plans`.
+         Status changes are applied ONLY after the user confirms. The user may
+         change status to any legal value at any time — the AI does not block.
+         (Status is a label — no table, no verbs. The AI suggests; the user decides.)
 
-Step 4: Commit
+         For done or scrapped artifacts, offer to land them:
+         move to landed/ mirroring source structure
+         (e.g. specs/foo.md → landed/specs/foo.md).
+         Append a line to landed/HISTORY.md when git: false.
+
+Step 4: Update cockpit.md
+        - Bump Last updated ONLY on real progress (new artifact written,
+          artifact landed, blocker resolved, Active focus shifted, or
+          Next session content changes — NOT for grep/read/explore-only sessions)
+        - Update Active focus if main thread shifted (otherwise leave)
+        - Update Next session: 1–5 concrete items (always confirm first item is still right)
+        - Update Hanging tasks: add new blocking items, clear resolved ones
+        - Cockpit is focus only — artifact status lives in the folder `INDEX.md` files
+
+Step 5: Commit
         - Use checklists/commits.md if it exists
         - Otherwise: terse imperative subject + reasoning in body
 ```
 
-### Step 5 — Check incident-report→checklist promotion gate (wrap-up)
+### Step 5a — Check incidents→checklists promotion gate (wrap-up)
 
-For each incident report touched (newly written or updated with `[Case N]` append) this session, evaluate the 3-criterion gate from [SKILL.md § Incident report promotion gates](SKILL.md#incident-report-promotion-gates):
+For each incident in `incidents/` touched (newly written or updated with `[Case N]` append) this session, evaluate the 3-criterion gate:
 
 1. `[Case N] count ≥ 3`?
 2. Recurred across ≥ 2 distinct sessions?
 3. Remediation pattern stable across cases?
 
-If ALL three hold: prompt the user "Promote `incident-reports/<topic>.md` to `checklists/<topic>.md`?". On user confirmation, move the file. On user defer or reject, leave alone — the gate will fire again next time. **No automatic promotion** — the gate guards against false positives; the user always decides.
+If ALL three hold: prompt the user "Promote `incidents/<topic>.md` to `checklists/<topic>.md`?". On user confirmation, move the file. On user defer or reject, leave alone — the gate will fire again next time. **No automatic promotion** — the gate guards against false positives; the user always decides.
 
-If any criterion fails: skip silently. Don't promote-prompt for marginal cases; the user will see the incident report again next time anyway via [proactive incident report resurfacing](SKILL.md#during--scenario-triggers).
+If any criterion fails: skip silently. Don't promote-prompt for marginal cases.
 
 ## Classification heuristics
 
 These are first-match-wins rules — apply in order. The first one that matches the new piece of knowledge wins; do not over-think.
 
-### (a) Bug + root cause → `incident-reports/`
+### (a) Bug + root cause → `incidents/`
 
 **Trigger phrase**: "I assumed X but actually Y" / "this kept failing because"
 
-Always goes to `incident-reports/`. Check existing topics first — if related, append `## [Case N]` to existing file. Do not start a new file for the same recurrence.
+Always goes to `incidents/`. Check existing topics first — if related, append `## [Case N]` to existing file. Do not start a new file for the same recurrence.
+
+Set `status: active` in frontmatter.
 
 ### (b) Repeated procedure → `checklists/`
 
@@ -99,45 +125,61 @@ Always goes to `incident-reports/`. Check existing topics first — if related, 
 
 Goes to `checklists/` **only on the second occurrence**. First time is ad-hoc work; second time is a pattern worth recording.
 
+Set `status: active` in frontmatter.
+
 ### (c) Design decision → `specs/`
 
 **Trigger phrase**: "we should architecturally do X" / "the design here is"
 
 Substantial decisions go to `specs/`. If the reasoning is complex enough to matter later, brainstorm with the user first — don't free-write.
 
-### (d) Multi-step task → `flight-plans/`
+Set `status: pending` in frontmatter (typically moves to `active` once implementation begins).
+
+### (d) Multi-step task → `plans/`
 
 **Trigger phrase**: "let me break this into steps" / "the plan is"
 
-Produce a structured flight-plan (hand-written or via a planning skill) — don't free-write into `flight-plans/`.
+Produce a structured plan in `plans/`. Optionally reference the governing design with `implements: specs/<x>.md`. Don't free-write.
 
-### (e) External feedback → `safety-reviews/`
+Set `status: pending` in frontmatter.
+
+### (e) External feedback → `debriefs/`
 
 **Trigger phrase**: user pastes review text from another AI / colleague
 
-Goes to `safety-reviews/`. **Must include disposition section before landing** (see [templates.md#safety-review](templates.md#safety-review)).
+Goes to `debriefs/`. **Must include disposition section before landing** (see [templates.md § debrief](templates.md#debrief-body)).
 
-### (f) Long-term idea → `sketches/`
+Set `status: active` in frontmatter.
+
+### (f) Imported external material → `charts/`
+
+**Trigger phrase**: "here's the RFC" / "import this competitor's API design"
+
+Raw external material — competitor code, RFCs, articles, research papers — goes to `charts/`. Authored operational procedures go to `checklists/` instead (keep the split clear).
+
+Set `status: active` in frontmatter.
+
+### (g) Long-term idea → `sketches/`
 
 **Trigger phrase**: "we could maybe one day" / "wouldn't it be cool if"
 
-Goes to `sketches/`. Mark `Revisit when` condition if you can.
+Goes to `sketches/`. Mark "Revisit when" condition if you can. Sketches only use `status: active` or `status: scrapped`.
 
-### (g) One-off → DO NOT WRITE
+### (h) One-off → DO NOT WRITE
 
 **Trigger phrase**: "the log output today was" / "I tried these 5 things and got"
 
 Do not write. Gate strictly. Flightdeck is not a session log.
 
-### (h) Ambiguous → brainstorm
+### (i) Ambiguous → brainstorm
 
-**Trigger phrase**: "this is sort of an incident report but also a checklist"
+**Trigger phrase**: "this is sort of an incident but also a checklist"
 
 If genuinely ambiguous, brainstorm with the user. Use the AI-asks-user template below.
 
 ## AI-asks-user template (ambiguous classification)
 
-When triggering (h), open the conversation with a structured ask:
+When triggering (i), open the conversation with a structured ask:
 
 ```
 I learned something from this session that I want to record, but I'm
@@ -146,9 +188,10 @@ not sure where it belongs. Here's the content:
 > <one-paragraph summary of the knowledge>
 
 Candidates:
-- incident-reports/  if the takeaway is "next time, avoid X because Y"
+- incidents/   if the takeaway is "next time, avoid X because Y"
 - checklists/  if the takeaway is "the steps to do X are"
-- specs/  if the takeaway is "the design decision is X"
+- specs/       if the takeaway is "the design decision is X"
+- plans/       if the takeaway is "here are the steps to implement X"
 
 My weak preference: <one candidate>, because <one reason>.
 
@@ -159,64 +202,52 @@ This forces a structured decision in seconds. The "skip the write" option is cri
 
 ## Hanging tasks — block session exit
 
-A session **cannot be closed cleanly** while either of these is unresolved:
+A session **cannot be closed cleanly** while this is unresolved:
 
-### Hanging safety-review disposition
+### Hanging debrief disposition
 
-If `safety-reviews/<file>` exists without a complete `Disposition` section, either:
+If `debriefs/<file>` exists without a complete `Disposition` section, either:
 - Complete the disposition now, or
-- Add to `cockpit.md` "Hanging tasks": `- [ ] Finish disposition of [safety-reviews/<file>](safety-reviews/<file>)`
+- Add to `cockpit.md` "Hanging tasks": `- [ ] Finish disposition of [debriefs/<file>](debriefs/<file>)`
 
 The hanging task must be reflected in `cockpit.md`. The next preflight will see it on entry and resolve.
 
-### Stale `kneeboard/` files
+`Hanging tasks` in cockpit is a **hand-maintained** list — the AI does not auto-derive it from INDEX. Add and clear entries explicitly.
 
-Detection: any `kneeboard/*.md` whose `last_touched:` frontmatter predates the current session's start. (Files without `last_touched:` count as stale by definition — see [templates.md § kneeboard](templates.md#kneeboard).)
+## INDEX regeneration — scope rules
 
-**Landing BLOCKS until every stale kneeboard file is resolved.** No "I'll get to it next session" path.
+Regenerate the `<!-- AUTO -->` region of a folder's `INDEX.md` **only when that folder had activity this session**:
 
-For each stale kneeboard file, the user must choose one of:
+- Activity = file added, modified, moved, landed, or status changed
+- Non-activity = the folder was only read (grep, preflight routing, etc.) — leave its INDEX alone
 
-1. **Classify** into another folder via the (a)–(h) heuristics above (most common: incident-reports/ or checklists/ if it crystallized into a lesson; sketches/ if it's a deferrable idea).
-2. **Delete**. The default. Cost of deleting a useful note is much smaller than the cost of `kneeboard/` turning into a junk drawer.
-3. **Defer explicitly** by adding `defer_reason:` frontmatter with a 1-line justification + `last_touched:` set to today. The defer surfaces in `preflight` again next time, with the reason visible.
+After regenerating any folder INDEX, check whether that folder's file count or status breakdown changed relative to what the root `flightdeck/INDEX.md` currently shows. If yes, regenerate the root INDEX's `<!-- AUTO -->` region too.
 
-There is no fourth option. kneeboard files survive one session by definition; carrying them requires explicit justification.
+The hand area outside `<!-- AUTO -->` is never touched by the AI — grouping notes, cross-references, and other hand-written content are preserved.
 
-## Board update — what changes
+Walkaround is responsible for the **full-consistency check** — it regenerates all indexes and validates every frontmatter. Exit ritual only touches changed folders.
+
+## Cockpit update — what changes
 
 ```
-Last updated:     ONLY in these 4 cases (otherwise leave alone):
+Last updated:     ONLY in these cases (otherwise leave alone):
                   (a) Next session content changes
                   (b) Active focus shifts (main thread moved)
-                  (c) Recently finished gets a new entry
-                  (d) A major task / phase completes (user-perceivable progress)
+                  (c) A major task / phase completes (user-perceivable progress)
+                  (d) An artifact lands or a blocker resolves
 Active focus:     update if main thread shifted (otherwise leave)
 Next session:     always update — at minimum confirm the first item is still right
-In flight:        update if items started or completed (state column or row content)
-Blockers:         update if blockers resolved or new ones appeared
-Recently finished: add new entry if a major thing shipped this session.
-                   AUTO-TRIM (not optional, not author-discretion): after
-                   adding, count entries; if > 5, drop oldest until count = 5.
-                   exit-ritual MUST enforce.
-Hanging tasks:    update — add new hangings, clear resolved ones
+Hanging tasks:    hand-maintained list — add new blocking items, clear resolved ones
+HISTORY.md:       when git: false, append one line per landing (YYYY-MM-DD — result; next: pointer)
 ```
 
-**`Last updated` is not a session-activity log.** Common false triggers that should NOT bump it:
-- Pure exploration / grep / reading code
-- Typo fixes in source or cockpit itself
-- Internal helper refactor with no user-perceivable surface change
-- Adding a single commit that doesn't complete a cockpit task
-- Running tests / build that already pass
+**`Last updated` is not a session-activity log.** False triggers that must NOT bump it: pure exploration / grep / reading code; typo fixes; internal refactor with no user-perceivable surface; a commit that doesn't complete a cockpit task; running already-passing tests.
 
-If you touched `Last updated` after only one of those, undo it. Stale-by-date is a weaker problem than signal pollution.
+**Cockpit is focus, not status.** Status visibility lives in the folder INDEX files, not cockpit. To see what is active, read the relevant `specs/INDEX.md`, `plans/INDEX.md`, etc.
 
-**Length check before exit**: if cockpit.md > 80 lines, trim immediately. If logbook.md `Recently finished` is accumulating long per-entry summaries, cap to 5 entries with ≤ 3-line summaries each. Anything older or longer → git log / archived flight-plan file.
+**When to update mid-session:** after any commit that changes user-perceivable state, refresh `Next session` before starting the next task — don't wait for landing.
 
-Avoid:
-- Logging session activity into "Recently finished" (gating: only user-perceivable progress)
-- Leaving stale items in `Next session` after they've been done
-- Writing >3-line summaries in `Recently finished` (the commit message / archived plan is the right place)
+**Length check before exit:** if `cockpit.md` > 80 lines, trim immediately (drop finished items; move design detail to a `specs/` entry or a sketch). History is `git log` / `landed/HISTORY.md`, never cockpit.
 
 ## See also
 

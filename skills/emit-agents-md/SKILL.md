@@ -12,11 +12,15 @@ User-triggered regeneration of `AGENTS.md` at repo root from the current state o
 
 *(Background rationale — do not copy any of this section into AGENTS.md.)*
 
-AGENTS.md is the cross-tool standard for project-level AI instructions, stewarded by the Agentic AI Foundation under the Linux Foundation; ~60k+ repos adopted by mid-2026 with measurable 28.6% runtime / 16.6% token wins. Flightdeck tracks the same information (current focus, next actions, in-flight artifacts) across `flightdeck/cockpit.md` + `manifest.md`. The emitter is the bridge: flightdeck authors maintain these files, and AI tools that don't speak flightdeck natively read the auto-regenerated `AGENTS.md`.
+AGENTS.md is the cross-tool standard for project-level AI instructions, stewarded by the Agentic AI Foundation under the Linux Foundation; ~60k+ repos adopted by mid-2026 with measurable 28.6% runtime / 16.6% token wins. Flightdeck tracks the same information (current focus, next actions, hanging tasks) in `flightdeck/cockpit.md`. The emitter is the bridge: flightdeck authors maintain this file, and AI tools that don't speak flightdeck natively read the auto-regenerated `AGENTS.md`.
 
 ## Run this checklist
 
-### Step 1: Read `flightdeck/cockpit.md` and `flightdeck/manifest.md`
+### Step 0: Read `flightdeck/rules.md`
+
+If present: when `emit_agents_md: false`, do nothing and report "AGENTS.md emit disabled via rules.md" — skip all remaining steps. When `git: false`, still emit (AGENTS.md is not git-dependent) but skip the working-tree-clean warning in "Don't do".
+
+### Step 1: Read `flightdeck/cockpit.md`
 
 Use Read on `flightdeck/cockpit.md`. Extract these fields (content copied as-is — the only transformation is the relative-link prefixing applied per-block in Step 3):
 
@@ -24,9 +28,7 @@ Use Read on `flightdeck/cockpit.md`. Extract these fields (content copied as-is 
 - All numbered items under `## Next session`.
 - All bullet items under `## Hanging tasks` whose content is not literally `(none)`.
 
-Then use Read on `flightdeck/manifest.md`. Extract:
-
-- All rows under `## In flight` whose first column is NOT `_none_` (skip the placeholder row).
+Extract only these three fields; ignore all other cockpit sections.
 
 ### Step 2: Read current `AGENTS.md` at repo root (if present)
 
@@ -52,15 +54,7 @@ The block to insert between markers (or as the whole new file body if AGENTS.md 
 
 ## Next session
 
-<Numbered list copied from cockpit.md Next session. Rewrite relative markdown links so they resolve from repo root: any link target that is NOT an HTTP/HTTPS URL, NOT an anchor (`#...`), and NOT already absolute (`/...`) must be prefixed with `flightdeck/` — since cockpit.md lives in `flightdeck/` but AGENTS.md lives at repo root. This includes `./` and `../` targets (prefix as-is, no normalization). Example: `[specs/foo.md](specs/foo.md)` → `[specs/foo.md](flightdeck/specs/foo.md)`. Link text stays unchanged; only the path inside the parentheses is rewritten.>
-
-## In flight
-
-<If there are non-placeholder rows in manifest.md: render them as a bullet list, one per row,
- in the form: "- **<Artifact>** (state: <State>) — <Owner / Reason>. Refs: <Refs>".
- Apply the same relative-link-rewriting rule as the Next session block (prefix with `flightdeck/` unless URL / anchor / absolute).
- If only the _none_ placeholder is present: write the single line:
- "None — all artifacts are at implicit lifecycle states based on folder location.">
+<Numbered list copied from cockpit.md Next session. Rewrite relative markdown links so they resolve from repo root: any link target that is NOT an HTTP/HTTPS URL, NOT an anchor (`#...`), and NOT already absolute (`/...`) must be prefixed with `flightdeck/` — since cockpit.md lives in `flightdeck/` but AGENTS.md lives at repo root. This includes `./` and `../` targets (prefix as-is, no normalization). Example: `[checklists/foo.md](checklists/foo.md)` → `[checklists/foo.md](flightdeck/checklists/foo.md)`. Link text stays unchanged; only the path inside the parentheses is rewritten.>
 
 ## Hanging tasks
 
@@ -69,7 +63,7 @@ The block to insert between markers (or as the whole new file body if AGENTS.md 
 
 ## More
 
-For full project state — checklists, incident-reports, safety-reviews, flight-plans — read `flightdeck/cockpit.md` and the linked artifacts.
+For full project state, read `flightdeck/cockpit.md`, the folder `INDEX.md` files, and the linked artifacts.
 
 <!-- END: flightdeck -->
 ```
@@ -101,21 +95,20 @@ Report concisely:
 AGENTS.md regenerated.
   Active focus: <one-line>
   Next session items: <N>
-  In flight rows: <N>
   Hanging tasks: <N>
   Hand-authored content preserved: <yes / no / n/a (file missing before)>
 ```
 
 ## Idempotency rules
 
-- Read cockpit.md / manifest.md fields in a fixed order (Active focus → Next session → In flight → Hanging tasks). Don't reorder.
+- Read cockpit.md fields in a fixed order (Active focus → Next session → Hanging tasks). Don't reorder.
 - Empty sections must produce the placeholder text — never be omitted (otherwise the second run might re-omit, but the first might have included, causing diffs).
 - One blank line between sections inside the flightdeck block. No trailing whitespace inside markers.
-- **Link prefixing is deterministic**: a relative link `(path)` always becomes `(flightdeck/path)` — no path normalization (e.g., do NOT collapse `flightdeck/../README.md` to `README.md`; emit the prefixed form). Determinism beats prettiness.
+- **Link prefixing is deterministic**: a relative link `(path)` always becomes `(flightdeck/path)` — no path normalization (e.g., do NOT collapse `flightdeck/../README.md` to `README.md`; emit the prefixed path). Determinism beats prettiness.
 
 ## Don't do
 
 - Don't read or modify content OUTSIDE the fenced markers in AGENTS.md.
 - Don't add markers around pre-existing hand-authored content — leave it alone, add the flightdeck block above it.
-- Don't include incident-report / checklist / spec details in the regenerated block — those are linked, not embedded. AGENTS.md stays terse.
+- Don't include checklist / spec / artifact details in the regenerated block — those are linked, not embedded. AGENTS.md stays terse.
 - Don't run this from a non-clean working tree without warning the user — mid-edit `cockpit.md` produces a stale snapshot.

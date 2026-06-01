@@ -1,6 +1,6 @@
 ---
 name: walkaround
-description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / manifest.md / logbook.md / specs / flight-plans / incident-reports / checklists / kneeboard for protocol drift, dangling references, bundle-contract violations, orphan (unreachable) files, stray files, stale entries, and lifecycle mismatches. Triggered by `/flightdeck:walkaround`.
+description: Use when explicitly invoking the flightdeck integrity audit — checks cockpit.md / rules.md / sketches / specs / plans / incidents / checklists / charts / debriefs for status validity, INDEX↔folder consistency, orphan plans, dangling references, stray files, AGENTS.md drift, and legacy 1.x paths. Triggered by `/flightdeck:walkaround`.
 disable-model-invocation: true
 ---
 
@@ -12,108 +12,125 @@ User-triggered integrity audit of a flightdeck for protocol drift. The protocol 
 
 - Periodically (e.g., before a release commit, weekly during active work).
 - After a long absence from the project — drift accumulates silently.
-- When something feels off (cockpit doesn't match reality, incident-reports unread, AGENTS.md stale).
-- Before promoting flightdeck conventions to a downstream project — walkaround should be ✅ clean on the source.
+- When something feels off (cockpit doesn't match reality, checklists unread, AGENTS.md stale).
+- Before promoting flightdeck conventions to a downstream project — walkaround should be clean on the source.
 
 ## Severity legend
 
-- **CRITICAL** — protocol contract broken (e.g., incident report missing required frontmatter, dangling internal reference). Fix before proceeding with new work.
-- **WARNING** — drift that will accumulate (e.g., stale kneeboard, missing AGENTS.md regeneration, stale Blockers). Fix soon, before the next release.
-- **INFO** — heads-up that may or may not need action (e.g., orphan incident report, approaching Recently finished cap). Judge per item.
+- **CRITICAL** — protocol contract broken (e.g., artifact missing required frontmatter, dangling internal reference). Fix before proceeding with new work.
+- **WARNING** — drift that will accumulate (e.g., stale INDEX rows, missing routing fields, legacy paths). Fix soon, before the next release.
+- **INFO** — heads-up that may or may not need action (e.g., orphan plan with no `implements`, stale `awaiting-review`). Judge per item.
 
 ## Audits
 
-Run all 10 in order. For each, report findings with the severity tag.
+Run all 10 in order. First read `flightdeck/rules.md` if present: honor `disabled_folders` (do not flag a disabled folder as orphan/stray) and `disabled_gates` (do not flag a disabled gate). For each, report findings with the severity tag.
 
-### 1. Incident reports / checklists frontmatter + bundle contracts (CRITICAL on miss)
+### 1. Frontmatter status validity (CRITICAL / WARNING)
 
-For each flat file `flightdeck/incident-reports/*.md` and `flightdeck/checklists/*.md` (NOT in `landed/`):
-- Read the frontmatter (between `---` markers).
-- Confirm `when_to_read`, `applies_to`, `last_updated` are ALL present.
-- If any missing: **CRITICAL** — file is invisible to flightdeck routing per the v0.6 hard-fail rule (see [workflow/SKILL.md § Frontmatter requirements](../workflow/SKILL.md#frontmatter-requirements-hard-fail)).
-- Confirm each value is well-formed: `last_updated` an ISO date (`YYYY-MM-DD`), `applies_to` a string or list, `when_to_read` non-empty. Malformed (e.g. `last_updated: potato`): **WARNING**.
+**Folder = kind (implicit); `status` = the only required frontmatter field.** Audit `status` only; no other frontmatter field is required or validated here.
 
-For each **bundle** (a subfolder under `checklists/` or `incident-reports/`, e.g. `checklists/<topic>/`):
-- It MUST contain `README.md`. Missing: **CRITICAL**.
-- The README frontmatter MUST carry `bundle: true` + `when_to_read` + `applies_to` + `last_updated` + `reading_order`. Missing any: **CRITICAL**.
-- Leaf files (everything other than the README) MUST NOT carry routing fields (`when_to_read` / `applies_to`). An over-reaching leaf breaks the single-entry guarantee: **CRITICAL**.
-- `reading_order` should list the actual leaf files (no missing/extra): mismatch is **WARNING**.
-- A bundle MUST NOT contain a nested sub-bundle: **WARNING**.
+#### Workflow artifacts (`sketches/`, `specs/`, `plans/`) — NOT in `landed/`
 
-### 2. Stale kneeboard files (WARNING on miss)
+For each `.md` file in these folders:
 
-For each `flightdeck/kneeboard/*.md`:
-- Read frontmatter for `last_touched:`.
-- If missing: **WARNING** — `last_touched:` is required (see [templates.md § kneeboard](../workflow/templates.md#kneeboard)).
-- If present but date predates the most recent commit by ≥ 7 days: **WARNING** — file has survived multiple landings. Either has a `defer_reason:` (acceptable, report as INFO instead) or should have been classified/deleted.
+- MUST carry `status`. Missing: **CRITICAL**.
+- Legal values:
+  - `sketches/`: `active` / `scrapped` only.
+  - `specs/` and `plans/`: `pending` / `active` / `awaiting-review` / `blocked` / `done` / `scrapped`.
+- Present but illegal value: **WARNING**.
 
-(Walkaround uses a stricter 7-day default than landing's "predates current session" — walkaround catches lingering kneeboard files that survived multiple landings.)
+#### Knowledge artifacts (`incidents/`, `checklists/`, `charts/`, `debriefs/`) — NOT in `landed/`
 
-### 3. Dangling internal references (CRITICAL on miss)
+For each `.md` file in these folders (excluding `INDEX.md`; `charts/` may contain external project trees — audit only top-level `.md` files directly under `charts/`, not the external tree):
+
+- MUST carry `status`. Missing: **CRITICAL**.
+- Legal values: `active` / `obsolete` / `superseded`.
+- Present but illegal value: **WARNING**.
+
+### 2. Knowledge routing fields (WARNING)
+
+For each knowledge artifact NOT in `landed/`:
+
+- Files in `incidents/`, `checklists/`, `charts/`: MUST carry `when_to_read` + `applies_to` + `last_updated`. Any missing: **WARNING** — file is invisible to flightdeck routing.
+- Files in `debriefs/`: MUST carry `reviewed` + `last_updated`. Any missing: **WARNING**. (`debriefs/` does NOT use `when_to_read` / `applies_to`.)
+- Malformed values (e.g. `last_updated: potato`, empty `when_to_read`): **WARNING**.
+
+### 3. `superseded` needs `superseded_by` (WARNING)
+
+For each knowledge artifact with `status: superseded` (NOT in `landed/`):
+
+- MUST carry `superseded_by` pointing to the replacing file. Missing or empty: **WARNING** — superseded artifact has no forward pointer; readers cannot find the replacement.
+- If `superseded_by` is present but the pointed-to file does not exist on disk: **WARNING** — broken `superseded_by` reference.
+
+### 4. Orphan plan (INFO)
+
+For each file in `plans/` (NOT in `landed/`) with no `implements:` frontmatter field:
+
+- **INFO** — consider linking a spec via `implements: specs/<x>.md`, or confirm this plan is intentionally standalone.
+
+Do not flag files that carry `implements:` even if the target is also missing (that is caught by Audit 7 — dangling references).
+
+### 5. INDEX ↔ folder consistency (WARNING)
+
+For each artifact folder (`sketches/`, `specs/`, `plans/`, `incidents/`, `checklists/`, `charts/`, `debriefs/`):
+
+- If the folder has no `INDEX.md`: **WARNING** — missing per-folder INDEX.
+- Read the `<!-- AUTO -->` block in the folder's `INDEX.md`. Each row should list one file with its `status` (and other displayed metadata). Check:
+  - A real file exists with no corresponding row: **WARNING** — missing INDEX row.
+  - A row exists for a file not on disk: **WARNING** — stale INDEX row (ghost).
+  - A row's displayed `status` does not match the file's actual frontmatter `status`: **WARNING** — out-of-sync status in INDEX. (Exception: `charts/` rows show project/file count, not per-file status — do not flag `charts/` for missing status values.)
+- For the root `flightdeck/INDEX.md`:
+  - If absent: **WARNING** — missing root INDEX.
+  - Each per-folder summary line's counts (e.g. `specs/ — 3 (2 active, 1 done)`) must match the actual file counts and status distribution in that folder. Mismatch: **WARNING**. (Again, `charts/` is exempt from status counting.)
+
+### 6. `landed/` has no non-terminal status (WARNING)
+
+For each `.md` file under `landed/` that carries a `status` field:
+
+- Workflow files (`landed/sketches/`, `landed/specs/`, `landed/plans/`): status must be `done` or `scrapped`. Any other value: **WARNING**.
+- Knowledge files (`landed/incidents/`, `landed/checklists/`, `landed/charts/`, `landed/debriefs/`): status must be `obsolete` or `superseded`. Any other value: **WARNING**.
+
+### 7. Dangling internal references (CRITICAL)
 
 For each markdown file under `flightdeck/` and every `*.md` at repo root:
-- Extract all markdown links of the form `[text](path)` where `path` is NOT an HTTP/HTTPS URL and NOT an anchor-only (`#...`).
+
+- Extract all markdown links matching `[text](path)` where `path` is NOT an HTTP/HTTPS URL and NOT an anchor-only (`#...`).
 - For each link, strip any `#fragment` suffix, then resolve the path relative to the file's directory. Verify the **file** exists only — do not validate anchors.
 - If the file is missing: **CRITICAL** — broken cross-reference. Report the source file:line + the broken target path.
 
-### 4. Orphan incident reports (INFO)
+### 8. Orphan / stray files (WARNING)
 
-For each `flightdeck/incident-reports/*.md`:
-- If `status: superseded` and no `→ project-rules` annotation (or similar promotion marker) in the file: **INFO** — was the upgrade actually declared?
-- If `status: obsolete` and `last_updated` < 90 days old: **INFO** — is it really obsolete, or did someone forget to re-evaluate?
+Known folders: `sketches/` `specs/` `plans/` `incidents/` `checklists/` `charts/` `debriefs/` `landed/`. Known root entries: `cockpit.md` `INDEX.md` `rules.md`.
 
-### 5. Manifest ↔ folder lifecycle mismatch (WARNING)
+- A `.md` directly under `flightdeck/` that is not a known entry file and not linked from any known entry: **WARNING** — orphan; either link it from an entry or remove it.
+- A `.md` in a known folder that is neither a valid artifact file nor an `INDEX.md`: **WARNING** — stray file with no clear role.
+- A non-`.md` file under `flightdeck/` that no folder semantics cover: **WARNING**. Asset files (`.png` `.svg` `.json` `.yaml` etc.) under a folder that expects them (e.g. `charts/`) are fine — do not flag those.
+- `charts/` may hold an external project tree — files nested inside `charts/<project>/` are not stray. Only top-level unrecognized files directly under `flightdeck/` or directly under a non-`charts/` folder are flagged.
 
-Compare `flightdeck/manifest.md` `## In flight` table against `specs/` and `flight-plans/` folder state:
-- Files in `specs/` or `flight-plans/` (NOT in `landed/`) with frontmatter `state: blocked` or `state: awaiting-review` MUST have a row in manifest `In flight`. Missing row: **WARNING**.
-- Files in `landed/specs/` or `landed/flight-plans/` must NOT have a `state:` field (or it must be `done`). Stray state: **WARNING**.
-- Every row in manifest `In flight` must point to a real file. Broken row: **WARNING**.
+**First run note**: on an existing project, Audit 8 may list many items at once. Advise gradual cleanup, not a forced all-at-once sweep.
 
-### 6. Stale Blockers entries (WARNING)
-
-For each bullet in manifest's `## Blockers` section:
-- If the bullet references a shipped version (e.g., "v0.5 work" when v0.5+ shipped per `CHANGELOG.md` / git tags): **WARNING**.
-- If the bullet's described condition is described in past tense or refers to a completed deliverable: **WARNING**.
-
-Flag only when confident the blocker is stale; an ambiguous one is INFO, not WARNING. Cleanup is one-line — usually rephrase to point at the current open item, or remove if no longer relevant.
-
-### 7. Recently finished length (INFO / WARNING)
-
-Count entries under logbook's `## Recently finished`:
-- 5 entries: ✅ at cap, no action.
-- 6+ entries: **WARNING** — exit-ritual auto-trim should have prevented this. Drop oldest until count = 5.
-- 0 entries: **INFO** — new project, or a recently reset logbook.
-
-### 8. AGENTS.md regeneration drift (WARNING)
+### 9. AGENTS.md drift (WARNING)
 
 If `AGENTS.md` exists at repo root with flightdeck markers (`<!-- BEGIN: flightdeck -->` / `<!-- END: flightdeck -->`):
-- Extract the source fields: `cockpit.md` → Active focus, Next session, Hanging tasks; `manifest.md` → In flight.
-- Read the same fields as currently rendered inside the AGENTS.md flightdeck block.
-- Compare field by field (actual values, not overall impression). Any source value absent from or different in the block: **WARNING** — emit-agents-md hasn't been re-run since the source changed. Name the diverging field.
+
+- Extract the source fields from `cockpit.md`: Active focus, Next session, Hanging tasks.
+- Read the same fields as currently rendered inside the `AGENTS.md` flightdeck block.
+- Compare field by field (actual values, not overall impression). Any source value absent from or different in the block: **WARNING** — `emit-agents-md` hasn't been re-run since the source changed. Name the diverging field.
 
 If `AGENTS.md` doesn't exist or has no flightdeck markers: skip (the project hasn't dogfooded the emitter yet; that's optional).
 
-### 9. Orphan / unreachable files (WARNING; INDEX prompt INFO)
+### 10. Legacy 1.x paths (WARNING)
 
-Flightdeck is graph-routed: a file unreachable from any entry is invisible.
-- Build the entry set: `cockpit.md`, `INDEX.md`, `manifest.md`, and every bundle `README.md`.
-- Extract their reachability edges to local `.md` targets (transitively through bundle READMEs): both markdown body links **and** each bundle README's `reading_order` entries. A leaf listed in its README's `reading_order` is reachable even if not also linked in prose — `reading_order` is the bundle's router, so do NOT flag such leaves as orphans.
-- Any `.md` under `flightdeck/` (excluding `landed/`, `kneeboard/`, and files that are themselves entries) not reachable from the entry set: **WARNING** — orphan; either link it from an entry or remove it. Custom root files (e.g. a project's own `conventions`-style doc) count as orphans if unlinked. A bundle leaf missing from its README's `reading_order` is an orphan — but if Audit 1 already flagged it as a `reading_order` mismatch, skip it here (don't double-report).
-- If ≥2 bundles exist and there is no `INDEX.md`: **INFO** — suggest creating `INDEX.md`; bundle discoverability degrades without it.
+If any of the following exist in the repo:
 
-### 10. Stray files (WARNING)
+- `flightdeck/manifest.md`: **WARNING** — legacy 1.x file; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md) (1.1.x → 1.2).
+- `flightdeck/logbook.md`: **WARNING** — legacy 1.x file; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
+- `flightdeck/kneeboard/` directory: **WARNING** — legacy 1.x folder; removed in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
+- `flightdeck/flight-plans/` directory: **WARNING** — legacy 1.x folder; renamed to `plans/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
+- `flightdeck/incident-reports/` directory: **WARNING** — legacy 1.x folder; renamed to `incidents/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
+- `flightdeck/safety-reviews/` directory: **WARNING** — legacy 1.x folder; renamed to `debriefs/` in 1.2. Point to [MIGRATION.md](../../MIGRATION.md).
 
-Whitelist of what belongs:
-- Entry files: `cockpit.md`, `manifest.md`, `logbook.md`, `INDEX.md`.
-- Known folders: `specs/ flight-plans/ checklists/ incident-reports/ charts/ sketches/ safety-reviews/ kneeboard/ landed/`.
-- Repo-level files (at root, not under `flightdeck/`): `.gitignore`, `README.md`, etc.
-
-Flag:
-- A file inside a routed folder (`checklists/`, `incident-reports/`) that is neither a valid flat resource (Audit 1) nor part of a valid bundle: **WARNING**.
-- A `.md` directly under `flightdeck/` that is not a known entry file and not linked from any entry: **WARNING** — but if Audit 9 already flagged it as an orphan, skip it here.
-- A non-`.md` file no folder semantics cover: **WARNING**. Asset / structured-data files (`.png` `.svg` `.json` `.yaml` etc.) under a folder that expects them (e.g. `charts/`) are fine — don't flag those.
-
-**First run note**: on an existing project, Audits 9–10 may list many items at once. Advise gradual cleanup, not a forced all-at-once sweep.
+Only report once per path — do not also flag these as stray/orphan in Audit 8.
 
 ## Output format
 
@@ -145,7 +162,7 @@ Flightdeck root: <path>
 ✅ Clean.
 ```
 
-Omit any severity line whose count is 0. If an audit's target folder is absent (e.g. no `incident-reports/`), treat that audit as ✅ N/A — nothing to check, not a finding.
+Omit any severity line whose count is 0. If an audit's target folder is absent (e.g. no `incidents/`), treat that audit as N/A — nothing to check, not a finding.
 
 ## Handling findings
 
@@ -159,6 +176,6 @@ Walkaround never auto-fixes. The author decides.
 
 - Don't auto-fix any finding — walkaround surfaces, author resolves.
 - Don't run walkaround against other repositories or foreign `flightdeck/` directories — false drift signals.
-- Don't include `landed/` archived files in most audits — they're history, not subject to current-state rules.
-- Don't fail loudly on optional missing folders (a project with no `incident-reports/` directory is fine).
+- Don't include `landed/` archived files in most audits — they're history, not subject to current-state rules (except Audit 6).
+- Don't fail loudly on optional missing folders — a project with no `debriefs/` directory is fine.
 - Don't bump cockpit `Last updated` from running walkaround — walkaround is read-only by design.

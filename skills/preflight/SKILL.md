@@ -1,12 +1,12 @@
 ---
 name: preflight
-description: Use when explicitly invoking the flightdeck entry ritual — reconciles cockpit.md against repo state, runs the staleness check, surfaces stale kneeboard files, loads a routing catalog of checklists / incident-reports / bundle READMEs (path + routing metadata), and reports the first "next session" item. Triggered by `/flightdeck:preflight`.
+description: Use when explicitly invoking the flightdeck entry ritual — reconciles cockpit.md against repo state via root INDEX.md, loads a routing catalog from folder INDEX files (not per-file frontmatter), and reports the first "next session" item. Triggered by `/flightdeck:preflight`.
 disable-model-invocation: true
 ---
 
 # Flightdeck Preflight
 
-User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state, load a routing catalog, and **report** the next item — then stop. It does not execute the item; that's the next turn's job. Useful when:
+User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state (via root INDEX), load a routing catalog (via folder INDEX files), and **report** the next item — then stop. It does not execute the item; that's the next turn's job. Useful when:
 
 - A long session has gone off the rails and you want to re-anchor on the cockpit.
 - The auto-loaded `workflow` didn't fire (e.g. fresh `flightdeck/` mid-session).
@@ -14,15 +14,27 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state,
 
 ## Run this checklist exactly
 
-1. **Read `flightdeck/cockpit.md`** once, in full — focus on `Last updated` and the "Next session" section. Don't re-read it later in the ritual; one read holds for the whole checklist.
+0. **Read `flightdeck/rules.md`** if present. Apply its toggles for the whole ritual: when `git: false`, skip step 2's git reconcile entirely; honor `disabled_folders` (don't suggest them in fallback).
 
-2. **Reconcile against repo state.** Run these checks independently (in parallel where supported):
-   - `git branch --show-current` — matches `Active focus`?
+1. **Detect 1.x layout (non-silent).** If ANY of the following exists, stop and report before reconciling:
+   - `flightdeck/manifest.md`
+   - `flightdeck/logbook.md`
+   - `flightdeck/kneeboard/`
+   - `flightdeck/flight-plans/`
+   - `flightdeck/incident-reports/`
+   - `flightdeck/safety-reviews/`
+
+   Tell the user: "1.x layout detected — migrate to 1.2?" and follow [MIGRATION.md](../../MIGRATION.md). Never migrate silently. Do not proceed with the rest of the checklist until the user decides.
+
+2. **Read `flightdeck/INDEX.md`** (root INDEX) once, in full — it carries the global status summary (counts per folder). Then **read `flightdeck/cockpit.md`** once, in full — focus on `Last updated`, `Active focus`, and the `## Next session` section. These two reads together are the reconcile baseline; do not re-read either during the ritual.
+
+3. **(skip entirely when `rules.md` sets `git: false`) Reconcile against repo state.** Run these checks independently (in parallel where supported):
+   - `git branch --show-current` — matches `Active focus` in cockpit?
    - `git status --short` — does the first "Next session" item show up as in-progress files?
    - `git stash list` — any entries not mentioned in cockpit?
-   - `git log -1 --format=%cs` — is `Last updated` more than ~14 days behind the most recent commit?
+   - `git log -1 --format=%cs` — is `Last updated` more than ~14 days behind the most recent commit? (When `git: false`, compare against the newest `landed/HISTORY.md` entry instead.)
 
-3. **Surface stale `kneeboard/` files.** For each file in `flightdeck/kneeboard/` whose `last_touched:` frontmatter predates the start of this preflight run (or is missing): report it to the user with the file path. Do NOT auto-delete or auto-classify. The user resolves at landing; this step exists so they enter the session aware of pending hygiene debt.
+   Cross-check cockpit's `## Next session` against reality (branch, tree state). Flag any mismatch.
 
 4. **Mismatch handling** — **always ask the user before acting**:
    - If branch differs: "Cockpit says focus is X but branch is Y — which is current?"
@@ -30,55 +42,51 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state,
    - If stash exists not in cockpit: "Stash entry from <date> not on cockpit — pick up, drop, or note?"
    - If cockpit > 14 days stale: "Cockpit last updated <date>, most recent commit <date>. Cockpit may be stale — refresh first?"
 
-5. **Load the routing catalog** (know-what-exists, NOT read-all). Build a compact table of routed resources so their triggers are in context before work starts:
-   - **Discover real paths first — never guess.** `Glob` two roots: `flightdeck/checklists/**/*.md` and `flightdeck/incident-reports/**/*.md` (not `flightdeck/**/*.md` — that drags in `landed/`). Drop any `landed/` path. Keep flat `*.md` and subdirectory `README.md`. Only touch paths Glob returned.
-   - **Read frontmatter only — never the body, never twice.** It's the first YAML block at the top of each file. Fetch it cheaply (`Read` with `limit: 20`, or `Grep`), in one batch, no repeated paths — never a full-file `Read`.
-   - **Parse the captured block as YAML** (the part between `---`), not by line-matching — multi-line / quoted / comma-bearing `when_to_read` values must survive.
-   - **Extract** per file: path, `when_to_read`, `applies_to`, `last_updated`. Do NOT extract `skip_when` (it is a match-time negative-routing concern, not a catalog one).
-   - **Classify by kind**: flat file in `checklists/` → checklist; flat file in `incident-reports/` → incident-report; subdirectory `README.md` with `bundle: true` → bundle; subdirectory `README.md` lacking `bundle: true` → malformed bundle.
-   - **Do NOT list bundle leaves** (non-README files inside a bundle): they carry no routing frontmatter and are reached via the README's `reading_order`. Listing them breaks the single-entry guarantee.
-   - **Never let a file vanish**: if frontmatter won't parse or a field is missing, still list it with a `⚠ parse error` / `⚠ missing when_to_read` marker. Markers are non-blocking — preflight is read-only.
-   - Print the catalog in the grouped format defined in [Output format](#output-format).
-6. **All reconciled → report item #1, then STOP.** Read-only recon doesn't fly the mission. State the item in one sentence and hand off: "Preflight complete (read-only). Say 'go' to execute item #1." Don't load any body or start the task — that's the next turn, and bodies load by `applies_to` only once execution begins.
+5. **Load the routing catalog** (know-what-exists, NOT read-all). Read the folder INDEX files — do NOT glob individual files or read per-file frontmatter:
+   - Read `flightdeck/checklists/INDEX.md` — it already lists each checklist's `when_to_read`, `applies_to`, and `status`.
+   - Read `flightdeck/incidents/INDEX.md` — same structure for incident files.
+   - If either INDEX is missing or obviously stale (file count in INDEX differs from root INDEX count), note it: "⚠ `<folder>/INDEX.md` missing or stale — walkaround owns the fix." This is non-blocking.
+   - **Do NOT read individual checklist or incident files** at catalog time. The folder INDEX is the catalog. Only drill into an individual file when a trigger actually matches the current task (i.e. at execution time, not preflight time).
+
+6. **Status sanity (from INDEX).** Scan each folder INDEX row for a missing `status` or an illegal status value for that folder's kind; report and offer to fix, non-silent. (Deeper file audits belong to walkaround.)
+
+   Valid status values by folder:
+   - Workflow folders (`sketches/`, `specs/`, `plans/`): `pending / active / awaiting-review / blocked / done / scrapped` (sketches: typically only `active / scrapped`)
+   - Knowledge folders (`incidents/`, `checklists/`, `charts/`, `debriefs/`): `active / obsolete / superseded`
+
+   List all findings before offering fixes. Offer once: "Fix all flagged files?" — do not fix any until the user confirms.
+
+7. **All reconciled → report item #1, then STOP.** Read-only recon doesn't fly the mission. State the item in one sentence and hand off: "Preflight complete (read-only). Say 'go' to execute item #1." Do not load any file body or start the task — that's the next turn.
 
 ## Fallback when "Next session" is empty
 
 Don't auto-start anything. Search in order (a missing directory counts as empty), present candidates to user:
 
-1. `flightdeck/flight-plans/` (excluding `landed/`) — already broken down, immediately executable.
-2. `flightdeck/specs/` (excluding `landed/`) — designed but no plan; ask "write plan now or execute directly?"
-3. `flightdeck/sketches/` — unstarted ideas; ask which (if any) to promote.
-
-Actively-implementing artifacts SHOULD already be in manifest's `In flight` table. If fallback finds something not on the manifest, flag as a manifest sync bug.
+1. `flightdeck/plans/` — surface `pending` / `blocked` / `active` plans (read `plans/INDEX.md`), most actionable first; a `done`-but-unlanded plan → offer to land it.
+2. `flightdeck/sketches/` — unstarted ideas (read `sketches/INDEX.md`); ask which (if any) to promote to a spec.
 
 ## Output format
 
 Report concisely:
 
 ```
+Root INDEX: specs/ — 2 (1 active, 1 done) | plans/ — 1 active | incidents/ — 1 active | checklists/ — 2 active
 Cockpit reconciled (Last updated: 2026-05-25; Active focus: <X>; tree clean)
 
-Routing catalog (loaded this session — know-what-exists, not read-all):
+Routing catalog (from folder INDEX files — know-what-exists, not read-all):
 
 [Checklists]
-| File | when_to_read | applies_to | last_updated |
+| File | when_to_read | applies_to | status |
 |---|---|---|---|
-| checklists/comments.md | before writing or editing any source-code comment | comments, code-style, documentation | 2026-05-29 |
+| checklists/comments.md | before writing or editing any source-code comment | comments, code-style | active |
 
-[Incident reports]
-| File | when_to_read | applies_to | last_updated |
+[Incidents]
+| File | when_to_read | applies_to | status |
 |---|---|---|---|
-| incident-reports/parser-recursion.md | before designing a recursive parser | parser, recursion | 2026-04-02 |
+| incidents/parser-recursion.md | before designing a recursive parser | parser, recursion | active |
 
-[Bundles]  (read the README first; leaves load via its reading_order)
-| README | when_to_read | applies_to | last_updated |
-|---|---|---|---|
-| checklists/plugin-spec/README.md | before authoring a plugin spec | plugin, spec | 2026-05-30 |
-
-[Malformed bundles]  (omitted when none)
-| README | issue |
-|---|---|
-| checklists/foo/README.md | ⚠ missing bundle: true |
+[Catalog notes]  (omitted when clean)
+- ⚠ incidents/INDEX.md missing — walkaround owns the fix
 
 Next session item #1: <item description>
 
@@ -87,7 +95,7 @@ Preflight complete (read-only). Catalog is know-what-exists only — NOT a subst
 → Say "go" to execute item #1.
 ```
 
-Grouping rules: one group per kind, explicit `[...]` headers; a bundle goes under `[Bundles]` regardless of whether it lives in `checklists/` or `incident-reports/`; a subdirectory `README.md` without `bundle: true` goes under `[Malformed bundles]`, never `[Bundles]`. Omit any group with no entries. If there are no routed resources at all, print `Routing catalog: (empty — no routed resources yet)`.
+Omit any table group with no entries. If both folder INDEX files are absent or empty, print `Routing catalog: (empty — no routed resources yet)`.
 
 Or if blocked:
 
@@ -104,6 +112,7 @@ Resolve which?
 - Don't auto-execute item #1 — report and stop.
 - Don't auto-pick a fallback when `Next session` is empty — always ask.
 - Don't bump `Last updated` — entry doesn't modify cockpit.
-- Don't read bodies at catalog time — metadata only; cost tracks file count, not body length.
-- Don't re-read or guess paths — one batch over Glob output.
+- Don't glob individual checklist/incident files or read per-file frontmatter for the catalog — read folder INDEX files only.
+- Don't drill into individual files until a trigger matches at execution time.
 - Don't grep the codebase for "things to do" — cockpit.md is authoritative.
+- Don't migrate silently — always ask the user before any structural change.
