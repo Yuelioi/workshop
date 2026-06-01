@@ -20,8 +20,6 @@
 
 > Your AI assistant forgets everything between chats. **flightdeck** is a directory convention plus a skill that gives it operational discipline across sessions — so the next session knows what you were doing, why, and what to do next.
 
-> **Renamed from `workshop` (≤ v0.8.1)** — project identity is now operational reliability, not "maker space". Existing users: see [MIGRATION.md](MIGRATION.md).
-
 ## Table of contents
 
 - [TL;DR](#tldr)
@@ -243,7 +241,7 @@ cd flightdeck
 
 After install, the skill auto-loads whenever your project has a `flightdeck/` directory. You can also force-invoke it.
 
-### Day 1 — bootstrap a new project
+### Getting started — bootstrap a new project
 
 ```text
 cd my-project
@@ -251,6 +249,8 @@ cd my-project
 ```
 
 flightdeck detects the missing directory, asks you to confirm, runs a two-question interview (Active focus, first Next session item), and writes `flightdeck/cockpit.md`. Done. From the next session onward, the SessionStart hook loads the skill automatically.
+
+**Already have an older `flightdeck/`?** On entry, `/flightdeck:preflight` (and the `walkaround` audit) read the layout version and offer a guided migration to the current layout — see [MIGRATION.md](MIGRATION.md). Migration is never silent: you confirm before anything moves.
 
 ### Every session
 
@@ -426,7 +426,7 @@ flightdeck is also durable in ways embeddings aren't: it's plain text that survi
 | [skills/walkaround/SKILL.md](skills/walkaround/SKILL.md) | `/flightdeck:walkaround` — 10-category integrity audit |
 | [skills/emit-agents-md/SKILL.md](skills/emit-agents-md/SKILL.md) | `/flightdeck:emit-agents-md` — AGENTS.md regeneration |
 | [TEST_PLAN.md](TEST_PLAN.md) | RED-GREEN-REFACTOR cycle status |
-| [MIGRATION.md](MIGRATION.md) | workshop → flightdeck upgrade notes |
+| [MIGRATION.md](MIGRATION.md) | Version-upgrade and layout-migration notes |
 | [CHANGELOG.md](CHANGELOG.md) | Version-by-version history |
 
 ## Contributing
