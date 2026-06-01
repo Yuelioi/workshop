@@ -16,6 +16,6 @@
 ---
 
 **Cockpit hygiene** (skill: workflow):
-- **80 lines hard ceiling.** Cockpit is intentionally ephemeral and operational. Historical / archival content does not live here — it goes to logbook.md.
-- `Last updated` bumps ONLY when: Next session changes / Active focus shifts / a major task completes. Not on typo fixes, grep, or routine commits.
-- If something feels permanent or referential, it does not belong in cockpit — move to logbook.md or out entirely.
+- **80 lines hard ceiling.** Cockpit is operational, not archival. History lives in `git log` / `landed/HISTORY.md`.
+- `Last updated` bumps ONLY when: Next session changes / Active focus shifts / a major task completes / an artifact lands.
+- Finished items leave `Next session`; they are not logged in cockpit.
