@@ -35,7 +35,7 @@ Free-prose project conventions every flightdeck skill must honor
 - **`disabled_gates: [frontmatter-required]` is dangerous** — it makes routed files invisible to grep-routing. Warn the user when honoring it.
 - **House rules are advisory prose** the AI honors, but they cannot redefine the four toggle keys.
 - **Malformed YAML or unparseable frontmatter** → warn and fall back to all defaults; never hard-fail (a broken `rules.md` must not brick the entry ritual).
-- **Read first**: every entry skill (`workflow`, `preflight`, `walkaround`, `landing`, `emit-agents-md`) reads `rules.md` before acting and branches on the toggles.
+- **Read first**: every entry skill (`preflight`, `walkaround`, `landing`, `emit-agents-md`) reads `rules.md` before acting and branches on the toggles.
 
 ---
 
@@ -162,8 +162,8 @@ I assumed X, but in reality Y.
   - `active` — still applies to the current codebase
   - `obsolete` — the underlying constraint no longer exists (framework upgraded, code removed). Keep the file as history but mark.
   - `superseded` — folded into your project agent rules. Note the upgrade: `status: superseded → project-rules §<section>`. Do not delete.
-- **Promotion path**: incident reports promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the incident continues to recur). Full gate criteria + workflow in [workflow/SKILL.md § Incident promotion gates](../workflow/SKILL.md#incident-promotion-gates).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). An incident report without them fails the workflow routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
+- **Promotion path**: incident reports promote in two stages — first to `checklists/` (after a 3-criterion gate at `landing`), then to project agent rules (only if the checklist is also ignored and the incident continues to recur). Full gate criteria in [protocol.md § Incident promotion gates](protocol.md#incident-promotion-gates).
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). An incident report without them fails the routing check and is reported as a hanging task. They let AI grep for relevance without loading the full file — same pattern as skill SKILL.md `description`. Examples:
   - `when_to_read: "before designing a recursive parser"` / `applies_to: [parser, recursion, stack-depth]`
   - `when_to_read: "before adding a new migration"` / `applies_to: [migration, schema, postgres]`
   - Keep tags **short and concrete** — `[parser, recursion]` beats `[code-quality, architecture]`. Generic tags don't help AI choose.
@@ -198,7 +198,7 @@ I assumed X, but in reality Y.
 ### Rules
 
 - **One file per topic** (e.g. `verify.md`, `release.md`, `re-fixture.md`).
-- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the workflow routing check — same hard-fail rule as incident reports. See `workflow/SKILL.md § Frontmatter requirements`.
+- **Frontmatter `when_to_read` + `applies_to` are REQUIRED** (not optional). A checklist without them fails the routing check — same hard-fail rule as incident reports. See [protocol.md § Frontmatter requirements](protocol.md#frontmatter-requirements-hard-fail).
 - **Frontmatter `last_updated`**: bump every time the checklist content actually changes (not for typo fixes). Lets AI / users judge staleness: a build checklist last touched 2 years ago in a fast-moving project is suspect.
 - **Promotion rule**: a process becomes a checklist **on the second occurrence**. First time is ad-hoc; second time is the pattern worth recording.
 - **No date prefix** — checklists are stable resources, not log entries.
