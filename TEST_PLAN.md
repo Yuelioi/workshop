@@ -18,4 +18,4 @@ This stub remains so links from `README.md` / `README.zh.md` / `CHANGELOG.md` st
 - **Single entry**: `/flightdeck:preflight` is the only entry skill; there is no `workflow` skill and no startup hook (nothing loads on session start).
 - **Branch-0 init-or-read**: in a directory with no `flightdeck/cockpit.md`, `/flightdeck:preflight` runs the First-time-setup interview and writes `cockpit.md` (with `**Layout**: 1.2`), then stops. With a `cockpit.md` present, it takes the read path (layout check → reconcile → catalog → report).
 - **Existence before layout**: the deck-existence check runs before the layout-version check (no attempt to read a `**Layout**` line when there is no cockpit).
-- **Companion paths**: `landing` / `walkaround` / `emit-agents-md` resolve their companion links under `skills/preflight/` (no `../workflow/` references remain).
+- **Companion paths**: `landing` / `walkaround` / `emit-agents-md` resolve their companion links under `skills/preflight/` (the old companion location is gone, no stale links remain).

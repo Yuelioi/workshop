@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Flightdeck Preflight
 
-The **single explicit entry point** for flightdeck. Nothing auto-loads — you run `/flightdeck:preflight` at the start of a working session. It either **initializes** a new `flightdeck/` (when none exists) or **reconciles** the existing one against repo state and **reports** the next item, then stops. It does not execute the item; that's the next turn's job. Use it when:
+The **single explicit entry point** for flightdeck. Nothing loads on its own — you run `/flightdeck:preflight` at the start of a working session. It either **initializes** a new `flightdeck/` (when none exists) or **reconciles** the existing one against repo state and **reports** the next item, then stops. It does not execute the item; that's the next turn's job. Use it when:
 
 - Starting a working session in a project that has (or should have) a `flightdeck/`.
 - Re-anchoring a long session that has drifted away from the cockpit.
