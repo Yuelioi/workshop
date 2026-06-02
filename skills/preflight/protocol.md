@@ -1,9 +1,6 @@
----
-name: workflow
-description: Use when a project has a flightdeck/ directory, when starting one, or when AI session context needs to survive across sessions
----
+# flightdeck protocol (reference)
 
-# workflow
+> Loaded on demand by `preflight` (and referenced by `landing` / `walkaround`). This is the protocol "textbook": the data model, folder semantics, routing, authority order, write gate, and lifecycle. The operational entry ritual lives in [SKILL.md](SKILL.md).
 
 ## Core principle
 
@@ -11,7 +8,7 @@ description: Use when a project has a flightdeck/ directory, when starting one, 
 
 ## Project rules (`rules.md`)
 
-`flightdeck/rules.md` is an **optional** project-config file read **first** by every entry skill (`workflow`, `preflight`, `walkaround`, `landing`, `emit-agents-md`). It carries a closed set of structured toggles plus free-prose house rules. Absent file = defaults (git on, emit on, all folders/gates active).
+`flightdeck/rules.md` is an **optional** project-config file read **first** by every entry skill (`preflight`, `landing`, `walkaround`, `emit-agents-md`). It carries a closed set of structured toggles plus free-prose house rules. Absent file = defaults (git on, emit on, all folders/gates active).
 
 Toggles: `git` · `emit_agents_md` · `disabled_folders` · `disabled_gates`. Full schema + degradation rules: [templates.md § rules.md](templates.md#rulesmd).
 
@@ -71,51 +68,7 @@ Reachability entries: `cockpit.md` / `INDEX.md` / `rules.md`. (No bundle README 
 
 **Routing is graph-based, not filesystem-based.** A file is "active" only if reachable from an entry (`cockpit.md`, `INDEX.md`, or `rules.md`). **A file nothing links to effectively does not exist** — no session reads it. Custom folders / root files are allowed but MUST be reachable from an entry, or they are orphans.
 
-## First-time setup (no `flightdeck/` exists)
-
-If invoked in a project without a `flightdeck/` directory — typically because the user typed `/flightdeck:preflight` to bootstrap:
-
-1. Ask: **"No `flightdeck/` here. Create one? (minimal: just `cockpit.md`)"**. Wait for confirmation.
-2. If yes, short interview:
-   - "Active focus — current main thread (5–15 words)?"
-   - "First 'next session' item — one concrete action?"
-3. Create `flightdeck/cockpit.md` from this template, substituting `<...>` with the answers + today's date:
-
-   ```markdown
-   # Cockpit — <project name>
-
-   **Last updated**: <YYYY-MM-DD> by <user>
-   **Active focus**: <from interview>
-
-   ## Next session
-
-   1. <from interview>
-
-   ## Hanging tasks
-
-   - (none)
-   ```
-4. Do NOT pre-create `incidents/`, `checklists/`, `specs/`, etc. — flightdeck's principle is "add folders when the need appears, not preemptively." `cockpit.md` alone is the minimal contract.
-5. From the next session onward (Claude Code), the SessionStart hook auto-loads this skill whenever `flightdeck/` is detected — no need to re-invoke the slash.
-
-Then proceed with the Entry checklist below.
-
-## Entry checklist (run at session start)
-
-0. Read `flightdeck/rules.md` if present; apply its toggles for the rest of the session (when `git: false`, skip every git step below and use `landed/HISTORY.md` for the staleness check).
-1. Read `flightdeck/cockpit.md` — focus on `Last updated` and the "next session" section.
-2. Reconcile against repo state. **Mismatch → ask user before acting.**
-   - (skip when `git: false`) `Active focus` matches `git branch --show-current`?
-   - (skip when `git: false`) The first "next session" item is reflected in `git status`?
-   - (skip when `git: false`) Any `git stash list` entries not mentioned in cockpit?
-   - Is `Last updated` more than ~14 days behind the most recent commit (or, when `git: false`, behind the newest `landed/HISTORY.md` entry)? → cockpit may be stale.
-3. All reconciled → execute the first "next session" item.
-
-**Fallback when `Next session` is empty**: search in this order, present candidates to user (do not auto-start):
-1. `specs/` and `plans/` for files whose `status` is `active` or `pending` (excluding `landed/`) — already defined, immediately executable.
-2. `sketches/` — unstarted ideas; ask which (if any) to promote to a spec.
-
-## During — scenario triggers
+## Routing — scenario triggers
 
 | Scenario | Read first |
 | --- | --- |
@@ -170,21 +123,9 @@ A scrapped sketch stays in `sketches/` (marked `status: scrapped`), never archiv
 
 ## Exit ritual
 
-90% of exits are obvious — classify and write directly. Only truly ambiguous items invoke brainstorming.
-
-Heuristics (first match wins):
-- Bug + root cause → `incidents/`
-- "Every time we do X, follow these steps" → `checklists/`
-- One-off log / debug session → DO NOT WRITE
-- Spans multiple folders, no clear primary → brainstorm with user
+90% of exits are obvious — classify and write directly. Only truly ambiguous items invoke brainstorming. The full decision tree (classification heuristics, hanging-task gate, INDEX regeneration, cockpit update) lives in [exit-ritual.md](exit-ritual.md) and is run by `/flightdeck:landing`.
 
 After classifying: update `cockpit.md` (`Last updated` + `Next session` + any `Hanging tasks` changes); append to `landed/HISTORY.md` when `git: false`; then commit (unless `git: false`). landing regenerates the INDEX of any folders changed this session.
-
-Details: [exit-ritual.md](exit-ritual.md).
-
-## Commands
-
-L1 session rituals (slash): `preflight` (enter), `landing` (exit), `walkaround` (audit), `emit-agents-md` (export). Status is a label the user edits and the AI suggests at landing.
 
 ## Write gate
 

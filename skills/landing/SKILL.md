@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Flightdeck Landing
 
-User-triggered explicit landing ritual. Thin entry-point that runs the [exit-ritual.md](../workflow/exit-ritual.md) decision tree as a one-command slash. Use for:
+User-triggered explicit landing ritual. Thin entry-point that runs the [exit-ritual.md](../preflight/exit-ritual.md) decision tree as a one-command slash. Use for:
 
 - Wrapping up a session cleanly before context compression.
 - Natural pause point (ship complete / brainstorm done) — closing checks before moving on.
@@ -14,14 +14,14 @@ User-triggered explicit landing ritual. Thin entry-point that runs the [exit-rit
 
 ## Run this checklist
 
-The full rules + rationale live in [exit-ritual.md](../workflow/exit-ritual.md). Skeleton:
+The full rules + rationale live in [exit-ritual.md](../preflight/exit-ritual.md). Skeleton:
 
 0. **Read `flightdeck/rules.md`** if present. When `git: false`: skip the commit step (step 7), and instead append one line to `landed/HISTORY.md` (`YYYY-MM-DD — <result>; next: <pointer>`, newest first). Honor `disabled_gates` (e.g. skip the debrief-disposition gate if disabled).
-1. **Resolve hanging tasks first** — incomplete debrief dispositions block clean exit. See [exit-ritual.md § Hanging tasks](../workflow/exit-ritual.md#hanging-tasks--block-session-exit). If one is genuinely blocking, list it and pause for the user before running steps 2–7.
-2. **Classify new knowledge** — apply heuristics (a)–(h), first-match wins. Folders: `specs/`, `plans/`, `incidents/`, `checklists/`, `charts/`, `debriefs/`, `sketches/`. Each written artifact carries a `status` field in frontmatter. No new knowledge is a valid outcome — don't manufacture a classification just to complete landing. See [exit-ritual.md § Classification heuristics](../workflow/exit-ritual.md#classification-heuristics).
-3. **Regenerate INDEX for changed folders** — at session end, regenerate the `<!-- AUTO -->` region of `INDEX.md` only for folders where a file was added, modified, moved, landed, or had its status changed this session. Leave other folders' INDEX untouched. If any folder's counts changed, also refresh the root `flightdeck/INDEX.md` `<!-- AUTO -->` region. See [exit-ritual.md § INDEX regeneration](../workflow/exit-ritual.md#index-regeneration--scope-rules).
+1. **Resolve hanging tasks first** — incomplete debrief dispositions block clean exit. See [exit-ritual.md § Hanging tasks](../preflight/exit-ritual.md#hanging-tasks--block-session-exit). If one is genuinely blocking, list it and pause for the user before running steps 2–7.
+2. **Classify new knowledge** — apply heuristics (a)–(h), first-match wins. Folders: `specs/`, `plans/`, `incidents/`, `checklists/`, `charts/`, `debriefs/`, `sketches/`. Each written artifact carries a `status` field in frontmatter. No new knowledge is a valid outcome — don't manufacture a classification just to complete landing. See [exit-ritual.md § Classification heuristics](../preflight/exit-ritual.md#classification-heuristics).
+3. **Regenerate INDEX for changed folders** — at session end, regenerate the `<!-- AUTO -->` region of `INDEX.md` only for folders where a file was added, modified, moved, landed, or had its status changed this session. Leave other folders' INDEX untouched. If any folder's counts changed, also refresh the root `flightdeck/INDEX.md` `<!-- AUTO -->` region. See [exit-ritual.md § INDEX regeneration](../preflight/exit-ritual.md#index-regeneration--scope-rules).
 3a. **Suggest status for affected artifacts** — for each artifact written or touched this session, the AI may suggest the next typical status (`pending → active → awaiting-review → done`; `active ↔ blocked`; any active state → `scrapped`). Status changes are applied only after the user confirms. For `done` or `scrapped` artifacts, offer to land them: move to `landed/` mirroring source structure (e.g. `specs/foo.md → landed/specs/foo.md`).
-4. **Update `cockpit.md`** — only bump `Last updated` on the 4 sanctioned triggers. Status visibility lives in folder INDEX files, not cockpit. See [exit-ritual.md § Cockpit update](../workflow/exit-ritual.md#cockpit-update--what-changes). Then run the **Length check** (below) right away, before step 5 — so the trim is reflected before AGENTS.md regen and commit.
+4. **Update `cockpit.md`** — only bump `Last updated` on the 4 sanctioned triggers. Status visibility lives in folder INDEX files, not cockpit. See [exit-ritual.md § Cockpit update](../preflight/exit-ritual.md#cockpit-update--what-changes). Then run the **Length check** (below) right away, before step 5 — so the trim is reflected before AGENTS.md regen and commit.
 5. **Regenerate `AGENTS.md` if the cockpit changed** — if any cockpit field AGENTS.md renders changed this session (`Last updated` / `Active focus` / `Next session` / `Hanging tasks`), run `/flightdeck:emit-agents-md` so the cross-tool bridge file stays current. Judge "changed" against the file's state at session start, not an empty baseline. See [emit-agents-md SKILL.md](../emit-agents-md/SKILL.md).
 6. **Workspace smoke-check (lightweight, non-blocking)** — scan for files this session added/left in `flightdeck/` that would drift the workspace (use `git status --short` to spot what's new or modified). Report, do not block:
    - **Stray root file**: any `.md` directly under `flightdeck/` that is not an entry file (`cockpit.md` / `INDEX.md` / `rules.md`) → flag "stray root file; classify into a folder or remove".
@@ -58,7 +58,7 @@ Commit now? (Y/n)
 
 ## Red flags
 
-If you find yourself doing any of these, STOP and re-read [exit-ritual.md § Classification heuristics](../workflow/exit-ritual.md#classification-heuristics):
+If you find yourself doing any of these, STOP and re-read [exit-ritual.md § Classification heuristics](../preflight/exit-ritual.md#classification-heuristics):
 
 - Brainstorming where every knowledge item belongs (heuristics catch 90%; default-brainstorm is the failure mode)
 - Saving session logs / debug dumps to `flightdeck/` — transient byproducts, not knowledge; DO NOT WRITE

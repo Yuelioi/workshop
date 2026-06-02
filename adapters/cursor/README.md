@@ -18,10 +18,10 @@ Or search "flightdeck" in the plugin marketplace.
 
 ## What "untested" means
 
-Cursor's skill / rules discovery has evolved across versions. The manifest follows the same shape as established plugins (e.g., superpowers), and the skill content under `skills/workflow/` is plain markdown — so it should load. What has **not** been verified:
+Cursor's skill / rules discovery has evolved across versions. The manifest follows the same shape as established plugins (e.g., superpowers), and the skill content under `skills/preflight/` is plain markdown — so it should load. What has **not** been verified:
 
 - That Cursor's plugin loader actually surfaces `SKILL.md` frontmatter to the agent.
-- That the skill triggers (auto-load on flightdeck/ projects, explicit invocation) work in Cursor's UX.
+- That explicit invocation (`/flightdeck:preflight`) works in Cursor's UX.
 
 ## Likely Cursor-specific concerns
 

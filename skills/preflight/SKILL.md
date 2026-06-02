@@ -1,22 +1,50 @@
 ---
 name: preflight
-description: Use when explicitly invoking the flightdeck entry ritual — reconciles cockpit.md against repo state via root INDEX.md, loads a routing catalog from folder INDEX files (not per-file frontmatter), and reports the first "next session" item. Triggered by `/flightdeck:preflight`.
+description: Use when explicitly invoking the flightdeck entry ritual — the single entry point. Initializes `flightdeck/` when absent (no cockpit.md); otherwise reconciles cockpit.md against repo state via root INDEX.md, loads a routing catalog from folder INDEX files, and reports the first "next session" item. Triggered by `/flightdeck:preflight`.
 disable-model-invocation: true
 ---
 
 # Flightdeck Preflight
 
-User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state (via root INDEX), load a routing catalog (via folder INDEX files), and **report** the next item — then stop. It does not execute the item; that's the next turn's job. Useful when:
+The **single explicit entry point** for flightdeck. Nothing loads on its own — you run `/flightdeck:preflight` at the start of a working session. It either **initializes** a new `flightdeck/` (when none exists) or **reconciles** the existing one against repo state and **reports** the next item, then stops. It does not execute the item; that's the next turn's job. Use it when:
 
-- A long session has gone off the rails and you want to re-anchor on the cockpit.
-- The auto-loaded `workflow` didn't fire (e.g. fresh `flightdeck/` mid-session).
-- The user wants a clean, predictable starting point before delegating to other skills.
+- Starting a working session in a project that has (or should have) a `flightdeck/`.
+- Re-anchoring a long session that has drifted away from the cockpit.
+- You want a clean, read-only starting point before delegating to other skills.
+
+The protocol "textbook" (data model, folder semantics, routing, write gate, lifecycle) is in [protocol.md](protocol.md) — load it on demand; see the index at the bottom.
 
 ## Run this checklist exactly
 
-0. **Read `flightdeck/rules.md`** if present. Apply its toggles for the whole ritual: when `git: false`, skip step 2's git reconcile entirely; honor `disabled_folders` (don't suggest them in fallback).
+0. **Branch-0 — deck existence (MUST run first; layout detection MUST NOT run before this).**
+   Check whether **`flightdeck/cockpit.md` exists** (cockpit.md, not merely the directory — it is flightdeck's minimal contract, so this also covers a half-initialized `flightdeck/` that has no cockpit).
 
-1. **Check layout version (non-silent on mismatch).** Read the `**Layout**: <ver>` line in `flightdeck/cockpit.md`'s header. The current layout version is **1.2**.
+   - **`flightdeck/cockpit.md` does NOT exist** → run **First-time setup**:
+     1. Ask: **"No `flightdeck/cockpit.md` here. Create one? (minimal: just `cockpit.md`)"** — wait for confirmation.
+     2. Short interview: "Active focus — current main thread (5–15 words)?" / "First 'next session' item — one concrete action?".
+     3. Write `flightdeck/cockpit.md` from this template (today's date, answers substituted):
+
+        ```markdown
+        # Cockpit — <project name>
+
+        **Last updated**: <YYYY-MM-DD> by <user>
+        **Active focus**: <from interview>
+        **Layout**: 1.2
+
+        ## Next session
+
+        1. <from interview>
+
+        ## Hanging tasks
+
+        - (none)
+        ```
+     4. Do NOT pre-create other folders — `cockpit.md` alone is the minimal contract. **Then STOP** — the next `/preflight` takes the read path below.
+   - **`flightdeck/cockpit.md` exists** → continue to step 1 (read path).
+
+1. **Read `flightdeck/rules.md`** if present. Apply its toggles for the whole ritual: when `git: false`, skip step 4's git reconcile entirely; honor `disabled_folders` (don't suggest them in fallback).
+
+2. **Check layout version (non-silent on mismatch).** Read the `**Layout**: <ver>` line in `flightdeck/cockpit.md`'s header. The current layout version is **1.2**.
 
    - **`Layout` == 1.2** → up to date; continue silently (report nothing for this step).
    - **`Layout` present but older (e.g. `1.1`)** → tell the user: "Layout `<ver>` detected — migrate to 1.2?" and follow [MIGRATION.md](../../MIGRATION.md). Do not proceed with the rest of the checklist until the user decides.
@@ -27,9 +55,9 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state 
 
    Never migrate (or stamp) silently — always ask the user first.
 
-2. **Read `flightdeck/INDEX.md`** (root INDEX) once, in full — it carries the global status summary (counts per folder). Then **read `flightdeck/cockpit.md`** once, in full — focus on `Last updated`, `Active focus`, and the `## Next session` section. These two reads together are the reconcile baseline; do not re-read either during the ritual.
+3. **Read `flightdeck/INDEX.md`** (root INDEX) once, in full — it carries the global status summary (counts per folder). Then **read `flightdeck/cockpit.md`** once, in full — focus on `Last updated`, `Active focus`, and the `## Next session` section. These two reads together are the reconcile baseline; do not re-read either during the ritual.
 
-3. **(skip entirely when `rules.md` sets `git: false`) Reconcile against repo state.** Run these checks independently (in parallel where supported):
+4. **(skip entirely when `rules.md` sets `git: false`) Reconcile against repo state.** Run these checks independently (in parallel where supported):
    - `git branch --show-current` — matches `Active focus` in cockpit?
    - `git status --short` — does the first "Next session" item show up as in-progress files?
    - `git stash list` — any entries not mentioned in cockpit?
@@ -37,19 +65,19 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state 
 
    Cross-check cockpit's `## Next session` against reality (branch, tree state). Flag any mismatch.
 
-4. **Mismatch handling** — **always ask the user before acting**:
+5. **Mismatch handling** — **always ask the user before acting**:
    - If branch differs: "Cockpit says focus is X but branch is Y — which is current?"
    - If `git status` is clean but cockpit says in-progress: "Cockpit flags 'X in progress' but tree is clean — did it ship?"
    - If stash exists not in cockpit: "Stash entry from <date> not on cockpit — pick up, drop, or note?"
    - If cockpit > 14 days stale: "Cockpit last updated <date>, most recent commit <date>. Cockpit may be stale — refresh first?"
 
-5. **Load the routing catalog** (know-what-exists, NOT read-all). Read the folder INDEX files — do NOT glob individual files or read per-file frontmatter:
+6. **Load the routing catalog** (know-what-exists, NOT read-all). Read the folder INDEX files — do NOT glob individual files or read per-file frontmatter:
    - Read `flightdeck/checklists/INDEX.md` — it already lists each checklist's `when_to_read`, `applies_to`, and `status`.
    - Read `flightdeck/incidents/INDEX.md` — same structure for incident files.
    - If either INDEX is missing or obviously stale (file count in INDEX differs from root INDEX count), note it: "⚠ `<folder>/INDEX.md` missing or stale — walkaround owns the fix." This is non-blocking.
    - **Do NOT read individual checklist or incident files** at catalog time. The folder INDEX is the catalog. Only drill into an individual file when a trigger actually matches the current task (i.e. at execution time, not preflight time).
 
-6. **Status sanity (from INDEX).** Scan each folder INDEX row for a missing `status` or an illegal status value for that folder's kind; report and offer to fix, non-silent. (Deeper file audits belong to walkaround.)
+7. **Status sanity (from INDEX).** Scan each folder INDEX row for a missing `status` or an illegal status value for that folder's kind; report and offer to fix, non-silent. (Deeper file audits belong to walkaround.)
 
    Valid status values by folder:
    - Workflow folders (`sketches/`, `specs/`, `plans/`): `pending / active / awaiting-review / blocked / done / scrapped` (sketches: typically only `active / scrapped`)
@@ -57,14 +85,15 @@ User-triggered explicit entry ritual: reconcile `cockpit.md` against repo state 
 
    List all findings before offering fixes. Offer once: "Fix all flagged files?" — do not fix any until the user confirms.
 
-7. **All reconciled → report item #1, then STOP.** Read-only recon doesn't fly the mission. State the item in one sentence and hand off: "Preflight complete (read-only). Say 'go' to execute item #1." Do not load any file body or start the task — that's the next turn.
+8. **All reconciled → report item #1, then STOP.** Read-only recon doesn't fly the mission. State the item in one sentence and hand off: "Preflight complete (read-only). Say 'go' to execute item #1." Do not load any file body or start the task — that's the next turn.
 
 ## Fallback when "Next session" is empty
 
-Don't auto-start anything. Search in order (a missing directory counts as empty), present candidates to user:
+Don't auto-start anything. Search in order (a missing directory counts as empty), present candidates to the user:
 
 1. `flightdeck/plans/` — surface `pending` / `blocked` / `active` plans (read `plans/INDEX.md`), most actionable first; a `done`-but-unlanded plan → offer to land it.
-2. `flightdeck/sketches/` — unstarted ideas (read `sketches/INDEX.md`); ask which (if any) to promote to a spec.
+2. `flightdeck/specs/` — `active` / `pending` designs not yet turned into a plan (read `specs/INDEX.md`); ask which to plan next.
+3. `flightdeck/sketches/` — unstarted ideas (read `sketches/INDEX.md`); ask which (if any) to promote to a spec.
 
 ## Output format
 
@@ -110,10 +139,20 @@ Resolve which?
 
 ## Don't do
 
+- Don't run the layout check (step 2) before the deck-existence check (step 0).
 - Don't auto-execute item #1 — report and stop.
 - Don't auto-pick a fallback when `Next session` is empty — always ask.
-- Don't bump `Last updated` — entry doesn't modify cockpit.
+- Don't bump `Last updated` — entry doesn't modify cockpit (the First-time-setup write is the one exception).
 - Don't glob individual checklist/incident files or read per-file frontmatter for the catalog — read folder INDEX files only.
 - Don't drill into individual files until a trigger matches at execution time.
 - Don't grep the codebase for "things to do" — cockpit.md is authoritative.
-- Don't migrate silently — always ask the user before any structural change.
+- Don't migrate (or initialize, or stamp) silently — always ask the user first.
+
+## Protocol knowledge (load on demand)
+
+The operational entry ritual is above. The protocol "textbook" lives in companions — read on demand:
+
+- [protocol.md](protocol.md) — data model · status · INDEX · folder map · routing · authority order · write gate · lifecycle · promotion gates · common mistakes
+- [folder-semantics.md](folder-semantics.md) — what each folder holds; minimal-vs-full setup
+- [templates.md](templates.md) — per-file frontmatter + cockpit / rules.md / INDEX templates
+- [exit-ritual.md](exit-ritual.md) — the landing ritual (run by `/flightdeck:landing`)

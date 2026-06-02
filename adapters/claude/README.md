@@ -22,12 +22,12 @@ This is the recommended path — it gives proper version tracking and lifecycle.
 
 ## Install — alternative (direct copy)
 
-For users who don't want to use the plugin marketplace, the installers at the repo root copy `skills/workflow/` directly into the user-level Claude Code skills directory.
+For users who don't want to use the plugin marketplace, the installers at the repo root copy every `skills/*` subdir directly into the user-level Claude Code skills directory.
 
 | OS | Target path |
 | --- | --- |
-| macOS / Linux | `~/.claude/skills/workflow/` |
-| Windows | `%USERPROFILE%\.claude\skills\workflow\` |
+| macOS / Linux | `~/.claude/skills/` |
+| Windows | `%USERPROFILE%\.claude\skills\` |
 
 ```powershell
 .\install.ps1
@@ -40,13 +40,12 @@ For users who don't want to use the plugin marketplace, the installers at the re
 After install:
 
 ```
-~/.claude/skills/workflow/   # auto-loaded via SessionStart hook
+~/.claude/skills/preflight/             # /flightdeck:preflight — the single entry (init-or-read)
 ├── SKILL.md
+├── protocol.md
 ├── folder-semantics.md
 ├── templates.md
 └── exit-ritual.md
-~/.claude/skills/preflight/             # /flightdeck:preflight explicit trigger
-└── SKILL.md
 ~/.claude/skills/landing/               # /flightdeck:landing explicit trigger
 └── SKILL.md
 ~/.claude/skills/walkaround/            # /flightdeck:walkaround integrity audit
@@ -60,19 +59,19 @@ After install:
 After install (either path), in a Claude Code session:
 
 1. Start a session in any project directory.
-2. The `workflow` skill should appear in the available skills list with description starting "Use when a project has a flightdeck/ directory...".
-3. Force-invoke with `/flightdeck:workflow` and confirm the entry checklist runs.
-4. Force-invoke `/flightdeck:preflight` and `/flightdeck:landing` — these should run the corresponding rituals explicitly.
+2. The `preflight` skill should appear in the available skills list with description starting "Use when explicitly invoking the flightdeck entry ritual...".
+3. Force-invoke with `/flightdeck:preflight` and confirm the entry ritual runs (init-or-read).
+4. Force-invoke `/flightdeck:landing` and `/flightdeck:walkaround` — these should run the corresponding rituals explicitly.
 
 If the skill does not appear:
-- Direct install: check `ls ~/.claude/skills/workflow/SKILL.md` exists.
+- Direct install: check `ls ~/.claude/skills/preflight/SKILL.md` exists.
 - Marketplace install: check `~/.claude/plugins/` for the cached plugin.
 - Either: verify SKILL.md frontmatter is intact (`name:` and `description:`).
 
 ## How invocation works
 
-- The skill is loaded automatically when Claude detects its description matches the session context (a project with `flightdeck/`).
-- Force-invoke via `/workflow`.
+- **Nothing loads automatically** — flightdeck installs no startup hook. You run `/flightdeck:preflight` to begin a session.
+- `/flightdeck:preflight` is the single entry point: it initializes `flightdeck/` when absent (no `cockpit.md`), otherwise reconciles and reports the next item.
 - Flightdeck is **self-contained**: it does not require any other plugin to function. If you also have `superpowers` installed, the SKILL.md mentions its `brainstorming` / `writing-plans` skills as optional companions — fine if present, fine if absent.
 
 ## Uninstall
@@ -87,10 +86,10 @@ Direct path:
 
 ```bash
 # macOS / Linux
-rm -rf ~/.claude/skills/workflow
+rm -rf ~/.claude/skills/{preflight,landing,walkaround,emit-agents-md}
 ```
 
 ```powershell
 # Windows
-Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\workflow"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\preflight", "$env:USERPROFILE\.claude\skills\landing", "$env:USERPROFILE\.claude\skills\walkaround", "$env:USERPROFILE\.claude\skills\emit-agents-md"
 ```

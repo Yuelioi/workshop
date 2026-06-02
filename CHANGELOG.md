@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — 2026-06-02
+
+Entry-layer collapse: one explicit entry skill, no auto-load. (Unrelated to the abandoned work-items "2.0" line — this 2.0 is purely about the entry model; `flightdeck/` layout is unchanged at 1.2.)
+
+### Removed
+- **Auto-loaded `workflow` skill** and the **SessionStart hook** — flightdeck is now manual-only. `/flightdeck:workflow` no longer exists.
+
+### Changed
+- **`/flightdeck:preflight` is the single entry point** — it initializes `flightdeck/` when absent (no `cockpit.md`), otherwise reconciles + reports (unchanged read behavior). Protocol knowledge moved into `skills/preflight/` (`protocol.md` + relocated companions).
+- **Empty-`Next session` fallback unified** (`specs/` + `plans/` + `sketches/`), fixing a prior workflow/preflight divergence.
+
+### Migration
+- `flightdeck/` decks need no changes — Layout stays 1.2. Run `/flightdeck:preflight` explicitly at session start. See [MIGRATION.md](MIGRATION.md).
+
 ## [1.3.0] — 2026-06-01
 
 ### Added

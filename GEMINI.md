@@ -1,4 +1,5 @@
-@./skills/workflow/SKILL.md
-@./skills/workflow/folder-semantics.md
-@./skills/workflow/templates.md
-@./skills/workflow/exit-ritual.md
+@./skills/preflight/SKILL.md
+@./skills/preflight/protocol.md
+@./skills/preflight/folder-semantics.md
+@./skills/preflight/templates.md
+@./skills/preflight/exit-ritual.md
