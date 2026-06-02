@@ -46,9 +46,7 @@
 /plugin install flightdeck@flightdeck-marketplace
 ```
 
-Then in any Claude Code session inside a project that has (or might have) a `flightdeck/` directory: the protocol auto-loads, reads `flightdeck/cockpit.md`, reconciles against `git status`, and resumes your work.
-
-For a brand-new project, `/flightdeck:workflow` bootstraps `flightdeck/cockpit.md` from a 2-question interview.
+Then, at the start of a working session, run `/flightdeck:preflight` — the single entry point. In an existing project it reads `flightdeck/cockpit.md`, reconciles against `git status`, and reports where you left off. In a fresh project (no `cockpit.md` yet) it bootstraps one from a 2-question interview. **Nothing runs on its own** — flightdeck does nothing until you invoke it.
 
 ## What it is
 
@@ -239,42 +237,43 @@ cd flightdeck
 
 ## Usage
 
-After install, the skill auto-loads whenever your project has a `flightdeck/` directory. You can also force-invoke it.
+After install, run `/flightdeck:preflight` at the start of a session — it's the single entry point. Nothing runs on its own; flightdeck does nothing until you invoke it.
 
 ### Getting started — bootstrap a new project
 
 ```text
 cd my-project
-/flightdeck:workflow
+/flightdeck:preflight
 ```
 
-flightdeck detects the missing directory, asks you to confirm, runs a two-question interview (Active focus, first Next session item), and writes `flightdeck/cockpit.md`. Done. From the next session onward, the SessionStart hook loads the skill automatically.
+With no `flightdeck/cockpit.md` yet, `/flightdeck:preflight` asks to create one, runs a two-question interview (Active focus, first Next session item), writes `flightdeck/cockpit.md`, and stops. Every later session, run `/flightdeck:preflight` again to read it back and resume.
 
 **Already have an older `flightdeck/`?** On entry, `/flightdeck:preflight` (and the `walkaround` audit) read the layout version and offer a guided migration to the current layout — see [MIGRATION.md](MIGRATION.md). Migration is never silent: you confirm before anything moves.
 
 ### Every session
 
+Run `/flightdeck:preflight`. It:
+
 ```
-1. Read flightdeck/cockpit.md           (≤80 lines, ~5 seconds)
-2. Reconcile against `git status`       (branch, uncommitted, stashes)
-3. Execute "Next session" item #1       (or surface mismatch and ask)
+1. Reads flightdeck/cockpit.md          (≤80 lines, ~5 seconds)
+2. Reconciles against `git status`      (branch, uncommitted, stashes)
+3. Reports "Next session" item #1       (say "go" to execute — or it surfaces a mismatch and asks)
 ```
 
 ### Slash commands
 
-| Command | Auto-loads? | Purpose |
-| --- | --- | --- |
-| `/flightdeck:workflow` | ✅ via SessionStart hook when `flightdeck/` exists | The main protocol. Also bootstraps the directory if missing. |
-| `/flightdeck:preflight` | — explicit only | Re-anchor a drifted long session against `cockpit.md` + git state. |
-| `/flightdeck:landing` | — explicit only | Clean session wrap — classify new knowledge, update cockpit, optionally commit. |
-| `/flightdeck:walkaround` | — explicit only | Integrity audit across 10 categories — protocol drift detection. |
-| `/flightdeck:emit-agents-md` | — explicit only | Regenerate `AGENTS.md` between fenced markers from `cockpit.md`. |
+| Command | Purpose |
+| --- | --- |
+| `/flightdeck:preflight` | **The single entry point.** Bootstraps `flightdeck/` when absent; otherwise reconciles `cockpit.md` against git state and reports the next item. |
+| `/flightdeck:landing` | Clean session wrap — classify new knowledge, update cockpit, optionally commit. |
+| `/flightdeck:walkaround` | Integrity audit across 10 categories — protocol drift detection. |
+| `/flightdeck:emit-agents-md` | Regenerate `AGENTS.md` between fenced markers from `cockpit.md`. |
 
-All commands except `workflow` carry `disable-model-invocation: true` — they fire only on explicit slash, never auto-triggered from conversation context.
+Every command carries `disable-model-invocation: true` — they fire only on an explicit slash, never auto-triggered from conversation context. Nothing loads on session start.
 
 ### Routing — what triggers what
 
-The skill watches the conversation and consults the right folder automatically:
+Once `/flightdeck:preflight` has loaded the protocol, the AI consults the right folder as the conversation calls for it:
 
 | What you say / what's happening | Skill routes AI to |
 | --- | --- |
@@ -288,7 +287,7 @@ The skill watches the conversation and consults the right folder automatically:
 
 ### Session end
 
-Say *"let's wrap up"* or similar. The AI runs the [landing ritual](skills/workflow/exit-ritual.md):
+Run `/flightdeck:landing` (the [landing ritual](skills/preflight/exit-ritual.md)):
 
 1. Apply classification heuristics to new knowledge (bug → `incidents/`, procedure → `checklists/`, one-off → discard).
 2. Update `cockpit.md` (`Last updated`, `Next session`, `## Hanging tasks` if changed).
@@ -322,7 +321,7 @@ There are several adjacent approaches to giving an AI continuity. flightdeck sit
 | **Read-time decomposition** (cockpit-first; on-demand folder routing) | ✅ | — | — | — | — | — |
 | **INDEX-first token saving** (per-folder derived index) | ✅ | — | — | — | — | — |
 | **Tool-agnostic** (markdown + filesystem) | ✅ | ✅ | partial | ✅ | Cursor-only | — |
-| **Skill self-loading** trigger | ✅ | — | ✅ | — | ✅ | — |
+| **Single explicit entry** (`/preflight`) | ✅ | — | — | — | — | — |
 | **Cross-tool reach** | via AGENTS.md emit | native | — | — | — | — |
 
 **Short version:**
@@ -339,7 +338,7 @@ flightdeck is **opinionated**: write gate before storage, lifecycle before memor
 <details>
 <summary><b>Is this just a directory of markdown files?</b></summary>
 
-Yes — that's the whole point. The protocol is `skills/workflow/SKILL.md`, which the AI loads. The state is plain markdown in `flightdeck/`. No database, no server, no service to deploy. Diff it in code review, grep it from the terminal, edit it in your editor. AI tools are participants in the protocol, not its custodians.
+Yes — that's the whole point. The protocol is `skills/preflight/SKILL.md` (plus `protocol.md`), which the AI loads when you run `/flightdeck:preflight`. The state is plain markdown in `flightdeck/`. No database, no server, no service to deploy. Diff it in code review, grep it from the terminal, edit it in your editor. AI tools are participants in the protocol, not its custodians.
 
 </details>
 
@@ -417,11 +416,11 @@ flightdeck is also durable in ways embeddings aren't: it's plain text that survi
 
 | File | What it covers |
 | --- | --- |
-| [skills/workflow/SKILL.md](skills/workflow/SKILL.md) | The entry-point your AI loads — protocol, authority order, lifecycle, design philosophy |
-| [skills/workflow/folder-semantics.md](skills/workflow/folder-semantics.md) | What each folder holds and why; minimal-vs-full setup; future expansion slots |
-| [skills/workflow/templates.md](skills/workflow/templates.md) | incident / checklist / sketch / debrief / cockpit templates with frontmatter rules |
-| [skills/workflow/exit-ritual.md](skills/workflow/exit-ritual.md) | The landing ritual — classification heuristics, red flags, promotion gates |
-| [skills/preflight/SKILL.md](skills/preflight/SKILL.md) | `/flightdeck:preflight` — explicit entry ritual |
+| [skills/preflight/SKILL.md](skills/preflight/SKILL.md) | `/flightdeck:preflight` — the single entry ritual (init-or-read) |
+| [skills/preflight/protocol.md](skills/preflight/protocol.md) | The protocol textbook — data model, authority order, lifecycle, routing, write gate |
+| [skills/preflight/folder-semantics.md](skills/preflight/folder-semantics.md) | What each folder holds and why; minimal-vs-full setup; future expansion slots |
+| [skills/preflight/templates.md](skills/preflight/templates.md) | incident / checklist / sketch / debrief / cockpit templates with frontmatter rules |
+| [skills/preflight/exit-ritual.md](skills/preflight/exit-ritual.md) | The landing ritual — classification heuristics, red flags, promotion gates |
 | [skills/landing/SKILL.md](skills/landing/SKILL.md) | `/flightdeck:landing` — explicit landing ritual |
 | [skills/walkaround/SKILL.md](skills/walkaround/SKILL.md) | `/flightdeck:walkaround` — 10-category integrity audit |
 | [skills/emit-agents-md/SKILL.md](skills/emit-agents-md/SKILL.md) | `/flightdeck:emit-agents-md` — AGENTS.md regeneration |
