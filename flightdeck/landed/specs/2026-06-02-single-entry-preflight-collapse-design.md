@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 ---
 
 # 单入口塌缩：preflight 取代 workflow（删除自动加载）

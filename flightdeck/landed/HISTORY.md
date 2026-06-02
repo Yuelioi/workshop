@@ -3,6 +3,7 @@
 <!-- Add-only landing log, newest first. One line per landing. Never edit or delete past entries.
      Required when rules.md sets git: false; optional otherwise. Never read at session start. -->
 
+- 2026-06-02 — v2.0.0 shipped: single explicit `/flightdeck:preflight` entry (init-or-read); deleted the `workflow` skill + the SessionStart hook (manual-only, no auto-load); protocol folded into `skills/preflight/` (`protocol.md` + relocated companions); unified empty-`Next session` fallback. Layout unchanged (1.2) — user decks need no migration.
 - 2026-06-02 — v1.3.0 landed: layout-version stamp + version-driven migration detection (`preflight`/`walkaround` compare cockpit's `**Layout**` line against the current layout version; legacy-marker check frozen as unstamped-deck fallback; never migrates silently). Layout schema stays 1.2 (no folder renames). Dogfooded several days; spec + plan archived.
 - 2026-06-01 — migrated own `flightdeck/` to the 2.0 work-items layout (specs/+flight-plans/ → landed/work-items/; safe-reviews → landed/safety-reviews/; cockpit + AGENTS regenerated to 2.0); 2.0 ready to ship.
 - 2026-06-01 — v2.0 built on branch `v2-entry-collapse-and-rules`: entry-layer collapse (single cockpit), `rules.md` customization, `## Plans` ledger, kneeboard removed, `landed/` generalized, `landed/HISTORY.md` added; next: review + release.

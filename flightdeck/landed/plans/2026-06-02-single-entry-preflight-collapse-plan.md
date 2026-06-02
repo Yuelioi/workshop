@@ -1,6 +1,6 @@
 ---
-status: active
-implements: specs/2026-06-02-single-entry-preflight-collapse-design.md
+status: done
+implements: landed/specs/2026-06-02-single-entry-preflight-collapse-design.md
 ---
 
 # 单入口塌缩（preflight 取代 workflow）Implementation Plan
