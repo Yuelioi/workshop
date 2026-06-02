@@ -17,7 +17,7 @@
     "operations",
     "reliability",
     "context-persistence",
-    "workflow"
+    "preflight"
   ],
   "skills": "./skills/"
 }
